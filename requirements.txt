@@ -1,0 +1,6 @@
+# Phiên bản đã dùng để chạy toàn bộ thí nghiệm (Python 3.11)
+torch>=2.2
+torchvision>=0.17
+numpy>=1.24
+matplotlib>=3.7
+reportlab>=4.0

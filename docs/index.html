@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CO5085 — Bài tập E1–E3</title>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    max-width: 780px; margin: 3rem auto; padding: 0 1.25rem; line-height: 1.6;
+  }
+  h1 { font-size: 1.6rem; margin-bottom: .2rem; }
+  .sub { color: #777; margin-top: 0; }
+  h2 { font-size: 1.1rem; margin-top: 2rem; border-bottom: 1px solid #ddd; padding-bottom: .3rem; }
+  a { color: #0b5fff; }
+  ul { padding-left: 1.2rem; }
+  code { background: rgba(127,127,127,.15); padding: .1rem .3rem; border-radius: 4px; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .92rem; }
+  th, td { border: 1px solid #ddd; padding: .45rem .6rem; text-align: left; }
+  th { background: rgba(127,127,127,.12); }
+</style>
+</head>
+<body>
+  <h1>CO5085 — Học sâu và ứng dụng trong thị giác máy tính</h1>
+  <p class="sub">Bài tập E1–E3 · HK261 (2026–2027) · Nhóm 2 sinh viên</p>
+
+  <h2>Liên kết</h2>
+  <ul>
+    <li>Repository mã nguồn: <a href="https://github.com/&lt;username&gt;/co5085-e1-e3">github.com/&lt;username&gt;/co5085-e1-e3</a></li>
+    <li>Báo cáo PDF (E1–E3): <a href="reports/exercises.pdf">reports/exercises.pdf</a></li>
+  </ul>
+
+  <h2>Nội dung</h2>
+  <table>
+    <tr><th>Bài</th><th>Chủ đề</th><th>Mã nguồn</th><th>Hạn nộp</th></tr>
+    <tr><td>E1</td><td>Softmax / MLP / CNN trên MNIST</td><td><code>E1/</code></td><td>02/11/2026</td></tr>
+    <tr><td>E2</td><td>MSA tự viết + tokenization</td><td><code>E2/</code></td><td>02/11/2026</td></tr>
+    <tr><td>E3</td><td>LSTM / GRU trên chuỗi ảnh</td><td><code>E3/</code></td><td>09/11/2026</td></tr>
+  </table>
+
+  <h2>Cách chạy</h2>
+  <pre><code>python -m venv .venv &amp;&amp; .venv\Scripts\activate
+pip install -r requirements.txt
+python E1\run_all.py
+python E2\run_all.py
+python E3\run_all.py</code></pre>
+
+  <p>Toàn bộ số liệu trong báo cáo sinh ra từ <code>*/results/summary.json</code> của ba lệnh trên.</p>
+</body>
+</html>

@@ -2,7 +2,7 @@
 
 Tài liệu này dành cho nhóm muốn **tự viết lại từ số 0** (đề yêu cầu hiểu và bảo vệ được code,
 nên đây là cách nên làm). Trong repo đã có sẵn một bản tham chiếu chạy được ở `common/`, `E1/`,
-`E2/`, `E3/` — dùng để đối chiếu khi bí, nhưng hãy tự gõ lại theo lộ trình ở §5.
+`E2/`, `E3/` — dùng để đối chiếu khi bí, nhưng hãy tự gõ lại theo lộ trình ở §4.
 
 ---
 
@@ -11,7 +11,7 @@ nên đây là cách nên làm). Trong repo đã có sẵn một bản tham chi�
 ```powershell
 cd D:\HCMUT\DL
 .\.venv\Scripts\activate          # Python 3.11 + torch 2.5.1+cu121
-python scripts\smoke_test.py      # kiểm tra toàn bộ: ~40s, in ra bảng tốc độ
+python scripts\smoke_test.py      # kiểm tra toàn bộ: ~50s, in ra bảng tốc độ
 ```
 
 `smoke_test.py` là **bước số 0 của mọi buổi làm việc**: nó nạp MNIST, chạy thử vài batch cho
@@ -79,7 +79,7 @@ optimizer.step()
 - ✅ Autograd: `requires_grad`, `loss.backward()` cộng dồn gradient vào `.grad`, vì sao phải
   `zero_grad()` mỗi bước, vì sao phải `torch.no_grad()` khi đánh giá.
 - ✅ `CrossEntropyLoss` = `log_softmax` + `NLLLoss`; đầu vào là **logits thô**.
-- ✅ Gradient của softmax + CE rút gọn thành `p - y_onehot` — hiểu vì sao nó "đẹp".
+- ✅ Gradient của softmax + CE rút gọn thành `p − y_onehot` — hiểu vì sao nó "đẹp".
 - ✅ Optimizer: SGD → momentum → Adam (moment bậc 1/2, bias correction), `lr`, `weight_decay`.
 - ✅ Overfitting: đọc đường cong train/val; dấu hiệu nào là underfit, dấu hiệu nào là overfit.
 - ✅ Metric: accuracy chưa đủ — đọc thêm confusion matrix, precision/recall/F1 per-class.
@@ -92,7 +92,7 @@ optimizer.step()
 - Hồi quy softmax = **một lớp tuyến tính + softmax**; nó tương đương học 10 "template" ảnh,
   dự đoán = mẫu nào khớp nhất. Vì sao nó bão hoà quanh 92–93% trên MNIST.
 - MLP: lớp ẩn + phi tuyến (ReLU) tăng capacity; đếm tham số:
-  `(784+1)*256 + (256+1)*128 + (128+1)*10 = 235.146`.
+  `(784+1)·256 + (256+1)·128 + (128+1)·10 = 235.146`.
 - CNN và **inductive bias**: chia sẻ trọng số + locality → học đặc trưng cục bộ (nét, góc, vòng),
   ít tham số hơn MLP cùng độ chính xác.
 - Công thức kích thước sau conv: `H_out = floor((H + 2P − K)/S) + 1`.
@@ -114,9 +114,9 @@ optimizer.step()
 **Công thức phải viết lại được**
 
 ```
-Q = X W_Q,  K = X W_K,  V = X W_V              # (B, N, d)
-head_h = softmax(Q_h K_hᵀ / √d_k) V_h          # d_k = d / H
-MSA(X) = concat(head_1..head_H) W_O
+Q = X·W_Q,  K = X·W_K,  V = X·W_V              # (B, N, d)
+head_h = softmax(Q_h·K_hᵀ / √d_k)·V_h          # d_k = d / H
+MSA(X) = concat(head_1..head_H)·W_O
 ```
 
 - **Vì sao chia cho `√d_k`**: nếu Q,K ~ N(0,1) độc lập thì `q·k` có phương sai `d_k`; chia cho
@@ -153,13 +153,13 @@ Nếu epoch đầu chỉ ~10–20% → attention hoặc positional embedding có
 **Công thức**
 
 ```
-RNN : h_t = tanh(W_xh x_t + W_hh h_{t−1} + b)
+RNN : h_t = tanh(W_xh·x_t + W_hh·h_{t−1} + b)
 LSTM: i,f,o = σ(...),  g = tanh(...),  c_t = f⊙c_{t−1} + i⊙g,  h_t = o⊙tanh(c_t)
-GRU : z,r = σ(...),  h̃ = tanh(W_xh x_t + W_hh (r⊙h_{t−1})),  h_t = (1−z)⊙h_{t−1} + z⊙h̃
+GRU : z,r = σ(...),  h̃ = tanh(W_xh·x_t + W_hh·(r⊙h_{t−1})),  h_t = (1−z)⊙h_{t−1} + z⊙h̃
 ```
 
 - Vì sao LSTM giảm **vanishing gradient**: cell state cộng dồn (`c_t = f⊙c_{t−1} + ...`) tạo
-  "đường cao tốc" gradient; cổng `f` học được cách giữ/ quên.
+  "đường cao tốc" gradient; cổng `f` học được cách giữ/quên.
 - GRU: 2 cổng, ít tham số hơn LSTM (~25%), thường tương đương trên chuỗi ngắn.
 - Số tham số LSTM 1 lớp: `4·((input + hidden)·hidden + hidden)`; GRU: `3·(...)`.
   Ví dụ `rows` (input 28, hidden 128): LSTM = 4·((28+128)·128 + 128) = 80.896 (+ head 1.290).
@@ -176,7 +176,7 @@ GRU : z,r = σ(...),  h̃ = tanh(W_xh x_t + W_hh (r⊙h_{t−1})),  h_t = (1−z
 Nếu accuracy tụt mạnh → mô hình thực sự dùng thứ tự, không chỉ cộng các hàng. Repo có sẵn
 hàm `evaluate_permuted_rows` trong `E3/run_all.py` để bạn tham khảo cách làm.
 
-**Kỳ vọng** (đo thật, 1 epoch rows/lstm): test ≈ 95%. CNN vẫn cao hơn (~98.9% sau 5 epoch).
+**Kỳ vọng** (đo thật, 1 epoch rows/lstm): test ≈ 95%. CNN vẫn cao hơn (~99,1% sau 5 epoch).
 
 ---
 
@@ -212,7 +212,7 @@ làm một mình).
    `assert model(torch.randn(2,1,28,28)).shape == (2,10)`. *Xong khi*: số tham số khớp bảng §0
    (7.850 / 235.146 / 468.010) — lệch nghĩa là cấu trúc khác.
 4. **`E1/train.py` + `run_all.py`** — lưu `metrics.json`, `history.csv`, hình. *Xong khi*: 3 model
-   đạt xấp xỉ 92.7% / 97.8% / 98.9–99.3% test (con số thực tế của nhóm bạn sẽ lệch ±0.3%).
+   đạt xấp xỉ 92,6% / 97,7% / 99,1% test (số của nhóm bạn sẽ lệch ±0,3%).
 5. **`E2/msa.py`** — bản tự viết + bản `nn.MultiheadAttention`. *Xong khi*: `test_msa.py` PASS.
 6. **`E2/tokenizers.py`** — bắt đầu bằng `patch`, rồi `row`, rồi `cnnstem`.
    *Xong khi*: in ra `(B, N, d)` đúng `N` mong đợi (50, 29, 50).

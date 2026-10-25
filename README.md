@@ -61,6 +61,17 @@ Mọi kết quả ghi vào `E*/results/<run>/` gồm `metrics.json`, `history.cs
 Sinh bằng các lệnh `run_all.py` ở trên; xem `E1/results/summary.md`, `E2/results/summary.md`,
 `E3/results/summary.md`. Báo cáo đầy đủ: `reports/exercises.pdf`.
 
+**E1 — đã chạy xong** (8/8/5 epoch, batch 128, seed 42):
+
+| Model | Tham số | Val acc | Test acc | Thời gian |
+|---|---:|---:|---:|---:|
+| softmax | 7.850 | 91,97% | **92,62%** | 42 s |
+| MLP | 235.146 | 97,57% | **97,68%** | 51 s |
+| CNN | 468.010 | 99,00% | **99,10%** | 55 s |
+
+E2/E3 chưa chạy full (mới kiểm tra 1 epoch qua `scripts/smoke_test.py`) — chạy
+`python E2\run_all.py` và `python E3\run_all.py` để sinh số liệu.
+
 ## Ghi chú
 
 - Training loop viết tay (`common/engine.py`), không dùng API kiểu `trainer.fit()`.

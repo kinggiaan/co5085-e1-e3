@@ -21,15 +21,15 @@ mỗi epoch. Nếu lệnh này xanh thì mọi thứ phía sau chỉ còn là v�
 **Đã cài:** `torch 2.5.1+cu121` (dùng được GTX 1650), `torchvision`, `numpy`, `matplotlib`,
 `reportlab`. MNIST đã tải sẵn trong `data/` (11 MB, nằm trong `.gitignore`).
 
-**Tốc độ thực đo** (GTX 1650 4 GB, batch 128, 50k ảnh train):
+**Tốc độ thực đo** (GTX 1650 4 GB, batch 128, 50k ảnh train, đã chạy thật):
 
-| Model | Tham số | s/epoch | 5 epoch |
-|---|---:|---:|---:|
-| E1 softmax (784→10) | 7.850 | ~3 | ~15 s |
-| E1 MLP (784→256→128→10) | 235.146 | ~3 | ~15 s |
-| E1 CNN (4 khối conv + BN) | 468.010 | ~11 | ~55 s |
-| E2 TinyViT patch/4, d=128, depth=2 | 275.210 | ~12 | ~50 s |
-| E3 LSTM trên 28 hàng, h=128 | 82.186 | ~7 | ~35 s |
+| Model | Tham số | s/epoch | Cấu hình đã chạy | Test acc |
+|---|---:|---:|---|---:|
+| E1 softmax (784→10) | 7.850 | 5,2 | 8 epoch | 92,62% |
+| E1 MLP (784→256→128→10) | 235.146 | 6,4 | 8 epoch | 97,68% |
+| E1 CNN (4 khối conv + BN) | 468.010 | 11,0 | 5 epoch | 99,10% |
+| E2 TinyViT patch/4, d=128, depth=2 | 275.210 | ~12 | 4 epoch (ước tính) | — |
+| E3 LSTM trên 28 hàng, h=128 | 82.186 | ~7 | 4 epoch (ước tính) | — |
 
 → Cả ba bài chạy hết **dưới 30 phút GPU**. Đừng ngại thử nhiều cấu hình.
 

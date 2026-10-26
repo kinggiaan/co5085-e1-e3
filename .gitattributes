@@ -1,0 +1,5 @@
+# Chuẩn hoá line-ending: giữ LF trong repo, tránh cảnh báo CRLF trên Windows
+* text=auto eol=lf
+*.png binary
+*.pdf binary
+*.pt binary

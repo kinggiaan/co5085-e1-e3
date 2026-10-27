@@ -22,3 +22,6 @@ runs/
 Thumbs.db
 .vscode/
 .idea/
+
+# log t?m khi ch?y dài
+_*.txt

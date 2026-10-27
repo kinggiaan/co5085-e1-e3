@@ -43,7 +43,8 @@ def main() -> list[dict]:
     for tok in TOKENIZERS:
         for msa in MSA_IMPLS:
             print(f"\n=== E2 / {tok} / {msa} ===")
-            results.append(train_main(["--tokenizer", tok, "--msa", msa]))
+            extra = ["--save-attention"] if (tok == "patch" and msa == "manual") else []
+            results.append(train_main(["--tokenizer", tok, "--msa", msa, *extra]))
 
     out = ensure_dir(RESULTS_DIR)
     save_json(results, out / "summary.json")

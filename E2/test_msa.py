@@ -61,7 +61,8 @@ def check(dim: int, heads: int, n_tokens: int, batch: int, seed: int = 0) -> dic
 
 
 def main() -> dict:
-    torch.set_grad_enabled(False)
+    # KHÔNG tắt gradient toàn cục ở đây: run_all.py gọi hàm này rồi huấn luyện tiếp
+    # trong cùng process, tắt grad sẽ làm loss.backward() báo "does not require grad".
     configs = [
         dict(dim=128, heads=4, n_tokens=50, batch=8),
         dict(dim=64, heads=2, n_tokens=29, batch=4),

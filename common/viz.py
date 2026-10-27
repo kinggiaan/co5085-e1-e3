@@ -129,7 +129,11 @@ def plot_bar_comparison(
     fig, ax = plt.subplots(figsize=(max(5, 0.9 * len(names)), 3.4))
     bars = ax.bar(names, values, color=[COLORS[i % len(COLORS)] for i in range(len(names))])
     ax.set_ylabel(ylabel)
-    ax.set_ylim(min(values) - 0.05 if min(values) > 0.1 else 0, 1.0)
+    vmax, vmin = max(values), min(values)
+    if vmax <= 1.0:  # trục accuracy: phóng to khoảng [vmin-0.08, 1.0]
+        ax.set_ylim(max(0.0, vmin - 0.08), 1.0)
+    else:            # trục thời gian (giây): luôn bắt đầu từ 0
+        ax.set_ylim(0, vmax * 1.15)
     ax.tick_params(axis="x", labelrotation=15, labelsize=8)
     if annotate:
         for b, v in zip(bars, values):
@@ -161,15 +165,35 @@ def plot_tradeoff(
     plt.close(fig)
 
 
-def plot_attention(attn: torch.Tensor, path: str | Path, title: str = "Attention (head 0, lớp 1)") -> None:
-    """attn: (N_tokens, N_tokens) — heatmap attention của một mẫu."""
-    a = attn.detach().cpu().float().numpy()
-    fig, ax = plt.subplots(figsize=(4.6, 4.0))
-    im = ax.imshow(a, cmap="viridis")
+def plot_attention(attn: torch.Tensor, path: str | Path, title: str = "", head: int | None = None) -> int:
+    """Heatmap attention của một mẫu.
+
+    attn: (H, N, N) hoặc (N, N). Nếu là (H, N, N) và `head=None`, tự chọn head có
+    phân bố "nhọn" nhất (độ lệch chuẩn lớn nhất) — head 0 sau vài epoch thường
+    gần như đều nên nhìn không có thông tin.
+
+    Trả về chỉ số head đã vẽ.
+    """
+    a = attn.detach().cpu().float()
+    if a.dim() == 3:
+        h = int(a.std(dim=(1, 2)).argmax()) if head is None else head
+    else:
+        h = 0
+        a = a.unsqueeze(0)
+    mat = a[h].numpy()
+
+    fig, ax = plt.subplots(figsize=(4.8, 4.2))
+    im = ax.imshow(mat, cmap="viridis")
     ax.set_xlabel("key token")
     ax.set_ylabel("query token")
     ax.grid(False)
-    ax.set_title(title, fontsize=9)
-    fig.colorbar(im, ax=ax, fraction=0.046, pad=0.03)
+    ax.set_title(title or f"Attention — head {h}", fontsize=9, pad=10)
+
+    cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.03)
+    cbar.ax.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter("%.3f"))
+    cbar.update_ticks()
+
     fig.savefig(path)
     plt.close(fig)
+    return h
+

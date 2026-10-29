@@ -1,0 +1,6 @@
+{
+  "run": "rows_lstm",
+  "test_acc_original": 0.9778,
+  "test_acc_shuffled_rows": 0.1122,
+  "delta": -0.8656
+}

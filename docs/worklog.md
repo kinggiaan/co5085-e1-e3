@@ -6,6 +6,17 @@ có khoảng trống vẫn đáng tin hơn một nhật ký đẹp mà không kh
 
 ---
 
+## Ghi nhận theo lời kể (chưa có artifact trong repo)
+
+> Mục này ghi lại điều nhóm **cho biết đã làm**, không kèm bằng chứng trong repository.
+> Người đọc cần đối chiếu với phần nhật ký có kiểm chứng ở dưới.
+
+| Ngày | Nội dung theo lời kể | Trạng thái bằng chứng |
+|---|---|---|
+| 10/10/2026 | Tải đề, dựng môi trường và bắt đầu làm trên **một máy khác** | Chưa có artifact: repo này chỉ chứa `.venv` tạo 27/10 và commit đầu tiên 27/10. Nếu tìm lại được thư mục cũ, chép sang bằng `robocopy /E /COPY:DAT /DCOPY:T` (giữ nguyên ngày file) rồi bổ sung vào đây. |
+
+---
+
 ## 27/10/2026 (tối) — đọc đề, dựng môi trường, xong E1
 
 | Giờ | Việc | Kiểm chứng |

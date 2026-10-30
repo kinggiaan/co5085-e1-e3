@@ -61,7 +61,7 @@ Mọi kết quả ghi vào `E*/results/<run>/` gồm `metrics.json`, `history.cs
 Sinh bằng các lệnh `run_all.py` ở trên; xem `E1/results/summary.md`, `E2/results/summary.md`,
 `E3/results/summary.md`. Báo cáo đầy đủ: `reports/exercises.pdf`.
 
-**E1 — đã chạy xong** (8/8/5 epoch, batch 128, seed 42):
+**E1 — softmax / MLP / CNN** (8/8/5 epoch, batch 128, seed 42):
 
 | Model | Tham số | Val acc | Test acc | Thời gian |
 |---|---:|---:|---:|---:|
@@ -69,8 +69,31 @@ Sinh bằng các lệnh `run_all.py` ở trên; xem `E1/results/summary.md`, `E2
 | MLP | 235.146 | 97,57% | **97,68%** | 51 s |
 | CNN | 468.010 | 99,00% | **99,10%** | 55 s |
 
-E2/E3 chưa chạy full (mới kiểm tra 1 epoch qua `scripts/smoke_test.py`) — chạy
-`python E2\run_all.py` và `python E3\run_all.py` để sinh số liệu.
+**E2 — 3 cách tokenize × 2 bản MSA** (dim 128, depth 2, 4 head, 4 epoch):
+
+| Tokenize | MSA tự viết | MSA PyTorch |
+|---|---:|---:|
+| patch 4×4 (49 token) | 67,86% | 69,57% |
+| mỗi hàng (28 token) | 85,43% | 89,19% |
+| CNN stem (49 token) | 82,05% | 90,63% |
+
+MSA tự viết khớp `nn.MultiheadAttention` tới **1,0e-07** khi dùng chung trọng số
+(`E2/test_msa.py`, kể cả khi có mask).
+
+**E3 — LSTM/GRU trên chuỗi ảnh** (hidden 128, 4 epoch) so với baseline E1:
+
+| Biểu diễn | LSTM | GRU |
+|---|---:|---:|
+| mỗi hàng (T=28) | 97,78% | **98,25%** |
+| mỗi cột (T=28) | 97,70% | 98,11% |
+| patch 4×4 (T=49) | 96,20% | 94,56% |
+| baseline | MLP 97,68% | CNN **99,10%** |
+
+Đảo ngẫu nhiên thứ tự hàng khi test làm `rows/lstm` rơi từ 97,78% xuống **11,22%** — bằng chứng
+mô hình thực sự dùng thông tin thứ tự.
+
+Báo cáo đầy đủ (11 trang, có bảng và hình): [`reports/exercises.pdf`](reports/exercises.pdf),
+sinh lại bằng `python reports/build_report.py`. Việc còn lại cho ngày mai: [`TODO.md`](TODO.md).
 
 ## Ghi chú
 

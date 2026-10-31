@@ -3,50 +3,73 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CO5085 — Bài tập E1–E3</title>
-<style>
-  :root { color-scheme: light dark; }
-  body {
-    font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    max-width: 780px; margin: 3rem auto; padding: 0 1.25rem; line-height: 1.6;
-  }
-  h1 { font-size: 1.6rem; margin-bottom: .2rem; }
-  .sub { color: #777; margin-top: 0; }
-  h2 { font-size: 1.1rem; margin-top: 2rem; border-bottom: 1px solid #ddd; padding-bottom: .3rem; }
-  a { color: #0b5fff; }
-  ul { padding-left: 1.2rem; }
-  code { background: rgba(127,127,127,.15); padding: .1rem .3rem; border-radius: 4px; }
-  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .92rem; }
-  th, td { border: 1px solid #ddd; padding: .45rem .6rem; text-align: left; }
-  th { background: rgba(127,127,127,.12); }
-</style>
+<title>CO5085 — E1–E3, A1–A2</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h1>CO5085 — Học sâu và ứng dụng trong thị giác máy tính</h1>
-  <p class="sub">Bài tập E1–E3 · HK261 (2026–2027) · Nhóm 2 sinh viên</p>
+  <p class="sub">HK261 (2026–2027) · Giảng viên: Lê Thành Sách, Nguyễn Quốc Minh</p>
+  <p class="sub"><b>Nhóm:</b> &lt;điền mã nhóm — họ tên 2 thành viên&gt;</p>
 
-  <h2>Liên kết</h2>
-  <ul>
-    <li>Repository mã nguồn: <a href="https://github.com/kinggiaan/co5085-e1-e3">github.com/kinggiaan/co5085-e1-e3</a></li>
-    <li>Báo cáo PDF (E1–E3): <a href="exercises.pdf">exercises.pdf</a></li>
-    <li>Nhật ký làm việc: <a href="https://github.com/kinggiaan/co5085-e1-e3/blob/main/docs/worklog.md">docs/worklog.md</a></li>
-  </ul>
+  <nav>
+    <a href="index.html">Trang chung</a>
+    <a href="a1.html">A1</a>
+    <a href="a2.html">A2</a>
+    <a href="exercises.pdf">Báo cáo E1–E3 (PDF)</a>
+    <a href="https://github.com/kinggiaan/co5085-e1-e3">GitHub</a>
+  </nav>
 
-  <h2>Nội dung</h2>
+  <h2>Các bài tập</h2>
   <table>
-    <tr><th>Bài</th><th>Chủ đề</th><th>Mã nguồn</th><th>Hạn nộp</th></tr>
-    <tr><td>E1</td><td>Softmax / MLP / CNN trên MNIST</td><td><code>E1/</code></td><td>02/11/2026</td></tr>
-    <tr><td>E2</td><td>MSA tự viết + tokenization</td><td><code>E2/</code></td><td>02/11/2026</td></tr>
-    <tr><td>E3</td><td>LSTM / GRU trên chuỗi ảnh</td><td><code>E3/</code></td><td>09/11/2026</td></tr>
+    <tr><th>Bài</th><th>Nội dung</th><th>Code</th><th>Báo cáo</th><th>Hạn</th></tr>
+    <tr>
+      <td>E1–E3</td>
+      <td>Phân loại MNIST: softmax/MLP/CNN · MSA + tokenization · LSTM/GRU trên chuỗi ảnh</td>
+      <td><code>E1/</code> <code>E2/</code> <code>E3/</code></td>
+      <td><a href="exercises.pdf">exercises.pdf</a></td>
+      <td>02/11 &amp; 09/11/2026</td>
+    </tr>
+    <tr>
+      <td>A1</td>
+      <td>CNN vs Transformer trên tập ảnh lớn (Tiny-ImageNet): from-scratch vs pretrained, 3 kiểu freeze</td>
+      <td><code>A1/</code></td>
+      <td><a href="a1.html">trang A1</a></td>
+      <td>A1.1 02/11 · A1.2 09/11</td>
+    </tr>
+    <tr>
+      <td>A2</td>
+      <td>Semantic segmentation trên Pascal VOC 2012 + phân tích paper SegFormer</td>
+      <td><code>A2/</code></td>
+      <td><a href="a2.html">trang A2</a></td>
+      <td>A2.1 02/11 · A2.2 16/11</td>
+    </tr>
   </table>
 
-  <h2>Cách chạy</h2>
+  <h2>Trạng thái</h2>
+  <table>
+    <tr><th>Mốc</th><th>Trạng thái</th><th>Ghi chú</th></tr>
+    <tr><td>E1 + E2</td><td><span class="tag done">xong nội dung</span></td><td>số liệu + báo cáo đã có; còn điền tên nhóm &amp; khai báo AI</td></tr>
+    <tr><td>E3</td><td><span class="tag done">xong nội dung</span></td><td>hạn 09/11</td></tr>
+    <tr><td>A1.1</td><td><span class="tag done">protocol đã chốt</span></td><td>Tiny-ImageNet, ResNet-18 vs ViT-B/16 — xem <a href="a1.html">trang A1</a></td></tr>
+    <tr><td>A1.2</td><td><span class="tag warn">đang chạy</span></td><td>hạn 09/11</td></tr>
+    <tr><td>A2.1</td><td><span class="tag done">chủ đề + paper đã chốt</span></td><td>VOC 2012 + SegFormer — xem <a href="a2.html">trang A2</a></td></tr>
+    <tr><td>A2.2</td><td><span class="tag warn">đang làm</span></td><td>hạn 16/11</td></tr>
+  </table>
+
+  <h2>Tái lập</h2>
   <pre><code>python -m venv .venv &amp;&amp; .venv\Scripts\activate
 pip install -r requirements.txt
-python E1\run_all.py
-python E2\run_all.py
-python E3\run_all.py</code></pre>
+python scripts\smoke_test.py      # kiểm tra môi trường
+python E1\run_all.py              # E1: 3 model
+python E2\run_all.py              # E2: MSA tự viết vs PyTorch, 3 tokenize
+python E3\run_all.py              # E3: LSTM/GRU vs baseline
+python A1\run_all.py              # A1: 6 cấu hình CNN vs ViT
+python A2\run_all.py              # A2: U-Net vs DeepLabV3 trên VOC
+python reports\build_report.py    # sinh PDF</code></pre>
 
-  <p>Toàn bộ số liệu trong báo cáo sinh ra từ <code>*/results/summary.json</code> của ba lệnh trên.</p>
+  <footer>
+    Nhật ký làm việc: <a href="https://github.com/kinggiaan/co5085-e1-e3/blob/main/docs/worklog.md">docs/worklog.md</a> ·
+    Dữ liệu không nằm trong repo (xem <code>.gitignore</code>), tải lại bằng script trong <code>scripts/</code>.
+  </footer>
 </body>
 </html>

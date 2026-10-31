@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A1 — CNN vs Transformer trên Tiny-ImageNet</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav>
+    <a href="index.html">← Trang chung</a>
+    <a href="a2.html">A2 →</a>
+    <a href="https://github.com/kinggiaan/co5085-e1-e3/tree/main/A1">Code A1</a>
+  </nav>
+
+  <h1>A1 — CNN vs Transformer trên tập ảnh lớn</h1>
+  <p class="sub">Mốc A1.1: dataset + protocol · Mốc A1.2: so sánh cuối</p>
+
+  <h2>1. Dataset</h2>
+  <p><b>Tiny-ImageNet</b> — 200 lớp, ảnh 64×64, 100.000 train / 10.000 val (nhãn có sẵn),
+  tải <a href="http://cs231n.stanford.edu/tiny-imagenet-200.zip">cs231n.stanford.edu</a> (~237 MB).
+  Bản quyền: dẫn xuất từ ImageNet, dùng cho mục đích nghiên cứu/giáo dục; trích dẫn nguồn khi báo cáo.</p>
+
+  <h3>Vì sao chọn Tiny-ImageNet</h3>
+  <table>
+    <tr><th>Tiêu chí</th><th>Tiny-ImageNet</th><th>CIFAR-100</th><th>Food-101</th></tr>
+    <tr><td>Độ phân giải</td><td>64×64 (ảnh tự nhiên)</td><td>32×32</td><td>512px</td></tr>
+    <tr><td>Số lớp / ảnh</td><td>200 / 110k</td><td>100 / 60k</td><td>101 / 101k</td></tr>
+    <tr><td>Pretrained 224px transfer</td><td>có nghĩa (phóng 3,5×)</td><td>kém tin cậy (phóng 7×)</td><td>tốt</td></tr>
+    <tr><td>Vừa GPU 4 GB trong 9 ngày</td><td><span class="tag done">có</span></td><td><span class="tag done">có</span></td><td><span class="tag warn">khó (tải 5 GB, batch rất nhỏ)</span></td></tr>
+    <tr><td>Kết luận freeze/pretrain</td><td><b>đáng tin</b></td><td>bị nhiễu bởi domain shift</td><td>đáng tin nhưng quá thời gian</td></tr>
+  </table>
+  <p class="muted">Điểm quyết định: CIFAR-100 quá nhỏ so với đầu vào 224×224 của mô hình pretrained,
+  nên lợi thế của pretrain bị bóp méo — đúng thứ A1 cần đo.</p>
+
+  <h2>2. DataLoader và augmentation</h2>
+  <table>
+    <tr><th>Giai đoạn</th><th>Biến đổi</th></tr>
+    <tr><td>Train</td><td>RandomResizedCrop(224, scale 0.6–1.0) · RandomHorizontalFlip · ColorJitter(0.2) · Normalize(ImageNet mean/std)</td></tr>
+    <tr><td>Val / Test</td><td>Resize(256) · CenterCrop(224) · Normalize</td></tr>
+  </table>
+  <p>Batch 64 (CNN) / 32 (ViT), <code>num_workers=4</code>, seed 42, split dùng val gốc của Tiny-ImageNet.</p>
+
+  <h2>3. Kiến trúc</h2>
+  <table>
+    <tr><th>Họ</th><th>Mô hình</th><th>Tham số</th><th>Ghi chú</th></tr>
+    <tr><td>CNN</td><td>ResNet-18</td><td>~11,3M</td><td>baseline kinh điển, hội tụ nhanh khi train from-scratch</td></tr>
+    <tr><td>Transformer</td><td>Swin-T</td><td>~27,7M</td><td>Transformer phân cấp (cửa sổ dịch) — đại diện hiện đại, vừa 4 GB VRAM</td></tr>
+  </table>
+  <p class="muted"><b>Vì sao không dùng ViT-B/16:</b> đo thực tế trên GTX 1650 4 GB, ViT-B/16 @224
+  cần 5.048 MB bộ nhớ (tràn sang shared memory) và chậm ~30× (31 s/bước so với 0,3 s/bước của
+  ResNet-18). Swin-T @128 chỉ cần 3,2 GB nên là lựa chọn khả thi; đây cũng là kiến trúc nằm trong
+  danh sách đề gợi ý (ViT / DeiT / Swin).</p>
+
+  <h2>4. Protocol — 6 cấu hình</h2>
+  <table>
+    <tr><th>#</th><th>Mô hình</th><th>Chế độ</th><th>Tham số trainable</th><th>Mục đích</th></tr>
+    <tr><td>1</td><td>ResNet-18</td><td>from-scratch</td><td>toàn bộ</td><td>mốc CNN không pretrain</td></tr>
+    <tr><td>2</td><td>Swin-T</td><td>from-scratch</td><td>toàn bộ</td><td>kiểm chứng "Transformer cần pretrain"</td></tr>
+    <tr><td>3</td><td>ResNet-18</td><td>full finetune</td><td>toàn bộ</td><td>trần trên của CNN pretrained</td></tr>
+    <tr><td>4</td><td>Swin-T</td><td>full finetune</td><td>toàn bộ</td><td>trần trên của Transformer pretrained</td></tr>
+    <tr><td>5</td><td>ResNet-18</td><td>freeze backbone</td><td>chỉ head (200 lớp)</td><td>chi phí tối thiểu, chất lượng đặc trưng đóng băng</td></tr>
+    <tr><td>6</td><td>Swin-T</td><td>freeze một phần</td><td>stage cuối + norm + head</td><td>điểm cân bằng giữa 4 và 5</td></tr>
+  </table>
+  <p>Ảnh <b>128×128</b>, batch 64, 50.000 ảnh train (subset của 100k, cùng subset cho cả 6 cấu hình),
+  val 10k. AdamW + cosine, weight decay 0,05, label smoothing 0,1, grad-clip 1,0.
+  Số epoch: from-scratch 20, finetune 8, freeze 6–8.</p>
+
+
+  <h2>5. Metric</h2>
+  <ul>
+    <li>Top-1 accuracy và macro-F1 trên val (và test nếu tách riêng)</li>
+    <li>Số tham số trainable, thời gian/epoch, peak VRAM</li>
+    <li>Confusion matrix cho cấu hình tốt nhất + 16 mẫu sai</li>
+  </ul>
+
+  <h2>6. Trạng thái</h2>
+  <table>
+    <tr><th>Mốc</th><th>Nội dung</th><th>Trạng thái</th></tr>
+    <tr><td>A1.1</td><td>dataset, split, augmentation, kiến trúc, kế hoạch freeze/pretrain</td><td><span class="tag done">xong</span></td></tr>
+    <tr><td>A1.2</td><td>6 cấu hình + bảng + biểu đồ + thảo luận</td><td><span class="tag warn">đang chạy</span></td></tr>
+  </table>
+
+  <footer>
+    Code: <a href="https://github.com/kinggiaan/co5085-e1-e3/tree/main/A1">A1/</a> ·
+    Chạy lại: <code>python A1\run_all.py</code>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A2 — Semantic segmentation trên VOC 2012 + SegFormer</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav>
+    <a href="index.html">← Trang chung</a>
+    <a href="a1.html">← A1</a>
+    <a href="https://github.com/kinggiaan/co5085-e1-e3/tree/main/A2">Code A2</a>
+  </nav>
+
+  <h1>A2 — Semantic segmentation trên Pascal VOC 2012</h1>
+  <p class="sub">Chủ đề tự chọn + phân tích paper · Mốc A2.1: chủ đề + paper + dataset · A2.2: pipeline + so sánh</p>
+
+  <h2>1. Chủ đề</h2>
+  <p><b>Phân đoạn ngữ nghĩa (semantic segmentation)</b> trên Pascal VOC 2012: gán nhãn 21 lớp cho từng pixel
+  (20 lớp đối tượng + nền). So sánh <b>U-Net from-scratch (CNN)</b> với <b>DeepLabV3-ResNet50 pretrained</b>
+  và <b>SegFormer-B0 (Transformer)</b>.</p>
+
+  <h3>Vì sao chọn chủ đề này</h3>
+  <ul>
+    <li>Đề cấm lặp lại bài toán phân loại ảnh của A1 — segmentation khác về bản chất (dự đoán dày, loss theo pixel).</li>
+    <li>Nối tiếp mạch <b>CNN vs Transformer</b> của A1 sang bài toán mới, nơi inductive bias cục bộ mạnh hơn nữa.</li>
+    <li>Vừa GPU 4 GB: U-Net ~7M tham số, SegFormer-B0 ~4M, ảnh 256–320, batch 8–16.</li>
+    <li>Metric chuẩn, tự cài được: mIoU, Dice, per-class IoU.</li>
+  </ul>
+
+  <h2>2. Paper phân tích</h2>
+  <table>
+    <tr><th>Trường</th><th>Nội dung</th></tr>
+    <tr><td>Tên</td><td>SegFormer: Simple and Efficient Design for Semantic Segmentation with Transformers</td></tr>
+    <tr><td>Tác giả</td><td>Enze Xie, Wenhai Wang, Zhiding Yu, Anima Anandkumar, Jose M. Alvarez, Ping Luo</td></tr>
+    <tr><td>Hội nghị</td><td>NeurIPS 2021</td></tr>
+    <tr><td>arXiv</td><td><a href="https://arxiv.org/abs/2105.15203">arXiv:2105.15203</a></td></tr>
+    <tr><td>Code</td><td><a href="https://github.com/NVlabs/SegFormer">github.com/NVlabs/SegFormer</a></td></tr>
+  </table>
+
+  <h3>Ba ý tưởng chính</h3>
+  <ol>
+    <li><b>Encoder Transformer phân cấp</b> trả về đặc trưng đa tỉ lệ (1/4, 1/8, 1/16, 1/32).</li>
+    <li><b>Không dùng positional encoding</b> — tránh phải nội suy mã vị trí khi độ phân giải test khác train,
+       vốn là nguồn giảm chất lượng của ViT trong segmentation. Thay vào đó là Mix-FFN (conv 3×3 trong FFN).</li>
+    <li><b>Decoder MLP nhẹ</b>: gộp đặc trưng các tầng rồi chiếu bằng MLP, không dùng decoder nặng.</li>
+  </ol>
+
+  <h3>Điểm sẽ phê bình trong báo cáo</h3>
+  <p>Paper đánh giá trên ADE20K/Cityscapes quy mô lớn với pretrain ImageNet-1k. VOC 2012 chỉ có ~1,5k ảnh train
+  — đúng vùng dữ liệu ít mà kết luận của paper chưa khảo sát. Câu hỏi riêng của nhóm:
+  <i>trên tập nhỏ, Transformer còn giữ lợi thế khi cả hai họ đều được pretrain?</i></p>
+
+  <h2>3. Dataset và metric</h2>
+  <table>
+    <tr><th>Hạng mục</th><th>Giá trị</th></tr>
+    <tr><td>Dataset</td><td>Pascal VOC 2012 (segmentation), 1.464 train / 1.449 val, 21 lớp</td></tr>
+    <tr><td>Bản quyền</td><td>Flickr, cho phép dùng phi thương mại / nghiên cứu</td></tr>
+    <tr><td>Tiền xử lý</td><td>Resize 320×320, chuẩn hoá ImageNet, augmentation: flip + color jitter + random scale</td></tr>
+    <tr><td>Metric chính</td><td>mIoU (mean Intersection over Union trên 21 lớp), Dice</td></tr>
+    <tr><td>Metric phụ</td><td>pixel accuracy, per-class IoU, confusion matrix ở cấp pixel</td></tr>
+  </table>
+
+  <h2>4. Kế hoạch pipeline</h2>
+  <table>
+    <tr><th>Biến thể</th><th>Pretrain</th><th>Vai trò</th></tr>
+    <tr><td>U-Net (tự viết)</td><td>không</td><td>baseline CNN from-scratch — thể hiện inductive bias</td></tr>
+    <tr><td>DeepLabV3-ResNet50</td><td>COCO/VOC</td><td>CNN mạnh có pretrain — tách hiệu ứng "pretrain" khỏi "transformer"</td></tr>
+    <tr><td>SegFormer-B0</td><td>ImageNet-1k (ADE)</td><td>đại diện paper đang phân tích</td></tr>
+  </table>
+  <p>Ba biến thể này cho phép tách hai yếu tố thường bị trộn: <b>kiến trúc</b> (CNN vs Transformer)
+  và <b>pretrain</b> (có vs không).</p>
+
+  <h2>5. Trạng thái</h2>
+  <table>
+    <tr><th>Mốc</th><th>Nội dung</th><th>Trạng thái</th></tr>
+    <tr><td>A2.1</td><td>chủ đề + paper + dataset + metric + kế hoạch pipeline</td><td><span class="tag done">xong</span></td></tr>
+    <tr><td>A2.2</td><td>pipeline chạy được, so sánh ≥2 biến thể, phân tích paper, video demo</td><td><span class="tag warn">đang làm</span></td></tr>
+  </table>
+
+  <footer>
+    Code: <a href="https://github.com/kinggiaan/co5085-e1-e3/tree/main/A2">A2/</a> ·
+    Chạy lại: <code>python A2\run_all.py</code>
+  </footer>
+</body>
+</html>

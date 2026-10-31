@@ -51,13 +51,35 @@ Không làm gì trên repo (bận việc khác). Không ghi công cho ba ngày n
 Kết quả: E2 patch 67,9/69,6 · row 85,4/89,2 · cnnstem 82,1/90,6; E3 rows/gru 98,25%,
 đảo thứ tự hàng làm rows/lstm rơi 97,78% → 11,22%.
 
+## 31/10/2026 (đêm) → 01/11 (rạng sáng) — A1 + A2: dữ liệu, code, chạy nền
+
+| Giờ | Việc | Kiểm chứng |
+|---|---|---|
+| 17:55 | Đọc đề A1, A2; chốt dataset A1 = Tiny-ImageNet, A2 = VOC2012 + paper SegFormer | commit `422a6db` |
+| 18:00 | Tải Tiny-ImageNet (237 MB), giải nén, sắp 10k ảnh val thành thư mục lớp | `scripts/prepare_tiny_imagenet.py` |
+| 18:00 | VOC2012: máy chủ gốc `robots.ox.ac.uk` timeout → chuyển sang mirror HuggingFace, dựng cấu trúc VOC chuẩn (1.464 train / 1.449 val) | `scripts/prepare_voc2012.py` |
+| 18:10 | Đo VRAM: ViT-B/16 @224 cần 5.048 MB (> 4 GB → tràn shared memory, 31 s/bước) → đổi Transformer sang **Swin-T @128** (3.243 MB, 0,78 s/bước) | `A1/README.md` |
+| 18:20 | Viết `A1/` (data, models, train, run_all) + `A2/` (data, models, metrics, train, run_all) | commit `080fd15` |
+| 18:25 | Chạy thử: U-Net 1 epoch; DeepLabV3 pretrained đạt **56,4% mIoU** trên 40 ảnh val (chưa finetune) | `_smoke/` (đã xoá) |
+| 18:30 | Trang GitHub Pages: `a1.html`, `a2.html`, trang chung + `style.css` | commit `080fd15` |
+| 19:00 | Phát hiện A1 chậm bất thường: 350 s/epoch trong khi GPU chỉ cần 37 s | log bên dưới |
+| 19:10 | Đo tách phần: đọc PIL 15 ms/ảnh · `ColorJitter` 5,2 ms/ảnh · `RandomResizedCrop` 1,7 ms/ảnh | script profiling (đã xoá) |
+| 19:20 | Sửa `A1/data.py`: nạp RAM + cache `.pt`, bỏ ColorJitter, `antialias=False` | commit sau |
+| 19:35 | Sửa lỗi matplotlib: tensor `(3,H,W)` đã chuẩn hoá → phải đảo chuẩn hoá trước khi `imshow` | commit sau |
+| 19:53 | Đo lại trong vòng lặp thật: **73,3 s/epoch** (chờ data 27,9 · compute 39,1 · val 6,3) | `_a1_log.txt` |
+| 20:15 | Bật `A1/run_all.py --limit 20000` (6 cấu hình, ~3 h) — chạy qua đêm | `A1/results/` |
+
+Ghi chú: job A1 chạy **đêm 31/10 sang 01/11**; kết quả ghi vào `A1/results/` khi từng cấu hình
+xong. A2 chạy sau (cùng 4 GB VRAM nên không chạy song song được).
+
 ## 01/11/2026 — (điền khi làm xong)
 
-- [ ] Điền mã nhóm + họ tên ở trang bìa báo cáo.
+- [ ] Xem `A1/results/summary.md` (job đêm) và chạy `A2/run_all.py`.
+- [ ] Điền họ tên + MSSV ở trang bìa báo cáo và trang chủ.
 - [ ] Điền mục khai báo công cụ AI (đề mục 1.6).
 - [ ] 2 thí nghiệm E3 thêm: `--bidirectional --hidden 64`, `--pooling mean`.
 - [ ] Viết nhận xét riêng cho từng chương.
-- [ ] Tạo repo GitHub, push, bật Pages.
+- [ ] Tag `a1-1`, `a2-1` và đẩy lên GitHub.
 
 ## 02/11/2026 — nộp E1 + E2
 

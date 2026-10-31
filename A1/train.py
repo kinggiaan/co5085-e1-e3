@@ -109,7 +109,11 @@ def main(argv=None) -> dict:
         model.train()
         t0 = time.perf_counter()
         running, correct, seen = 0.0, 0, 0
+        t_wait, t_compute = 0.0, 0.0
+        t_batch = time.perf_counter()
         for x, y in loaders["train"]:
+            t_now = time.perf_counter()
+            t_wait += t_now - t_batch          # thời gian chờ dataloader trả batch
             x, y = x.to(device, non_blocking=True), y.to(device, non_blocking=True)
             optimizer.zero_grad(set_to_none=True)
             logits = model(x)
@@ -120,10 +124,14 @@ def main(argv=None) -> dict:
             running += loss.item() * y.size(0)
             correct += (logits.argmax(1) == y).sum().item()
             seen += y.size(0)
+            t_compute += time.perf_counter() - t_now
+            t_batch = time.perf_counter()
         scheduler.step()
 
         tr_loss, tr_acc = running / max(seen, 1), correct / max(seen, 1)
+        t_val0 = time.perf_counter()
         va = evaluate(model, loaders["val"], criterion, device)
+        t_val = time.perf_counter() - t_val0
         dt = time.perf_counter() - t0
 
         history["epoch"].append(epoch)
@@ -137,7 +145,8 @@ def main(argv=None) -> dict:
             best_acc = va["acc"]
             best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
         print(f"epoch {epoch:02d}/{epochs} | train loss {tr_loss:.4f} acc {tr_acc:.4f} "
-              f"| val loss {va['loss']:.4f} acc {va['acc']:.4f} | {dt:5.1f}s", flush=True)
+              f"| val loss {va['loss']:.4f} acc {va['acc']:.4f} | {dt:5.1f}s "
+              f"(chờ data {t_wait:4.1f}s · compute {t_compute:4.1f}s · val {t_val:4.1f}s)", flush=True)
 
     train_time = time.perf_counter() - t_start
     if best_state is not None:
@@ -179,7 +188,7 @@ def main(argv=None) -> dict:
     if not args.no_plot:
         viz.plot_history(history, out_dir / "curves.png", title=f"A1 {tag}")
         plot_worst_classes(rec, out_dir / "worst_classes.png", tag)
-        save_error_samples(args.data_root, preds, labels, out_dir / "errors.png", n=16)
+        save_error_samples(loaders["val"].dataset, preds, labels, out_dir / "errors.png", n=16)
 
     print(f"[{tag}] val acc = {test['acc']:.4f} | macro-F1 = {metrics['macro_f1']:.4f} | "
           f"{train_time/60:.1f} phút", flush=True)
@@ -202,12 +211,12 @@ def plot_worst_classes(rec: list[float], path: Path, tag: str, k: int = 15) -> N
     plt.close(fig)
 
 
-def save_error_samples(root: str, preds: np.ndarray, labels: np.ndarray, path: Path, n: int = 16) -> None:
+def save_error_samples(dataset, preds: np.ndarray, labels: np.ndarray, path: Path, n: int = 16) -> None:
+    """Vẽ n ảnh dự đoán sai. `dataset` phải là đúng dataset đã dùng để dự đoán (cùng subset)."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    ds = TinyImageNetSplit(root, "val")
     wrong = np.flatnonzero(preds != labels)[:n]
     if len(wrong) == 0:
         return
@@ -217,8 +226,15 @@ def save_error_samples(root: str, preds: np.ndarray, labels: np.ndarray, path: P
     axes = np.atleast_1d(axes).ravel()
     for ax in axes:
         ax.axis("off")
+    mean = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1)
+    std = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1)
     for ax, i in zip(axes, wrong):
-        img, _ = ds[int(i)]
+        img, _ = dataset[int(i)]
+        # dataset trả về tensor (3,H,W) đã chuẩn hoá -> đưa về (H,W,3) trong [0,1] để hiển thị
+        if isinstance(img, torch.Tensor):
+            if img.dim() == 3 and img.shape[0] == 3:
+                img = (img * std + mean).clamp(0, 1).permute(1, 2, 0)
+            img = img.numpy()
         ax.imshow(img)
         ax.set_title(f"T:{labels[i]} P:{preds[i]}", fontsize=6, color="#d62728")
         ax.axis("off")

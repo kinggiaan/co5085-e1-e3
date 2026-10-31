@@ -491,6 +491,12 @@ def main() -> None:
     size = OUT.stat().st_size / 1024
     print(f"Đã ghi {OUT} ({size:.0f} KB, {doc.page} trang)")
 
+    # GitHub Pages chỉ phục vụ thư mục /docs -> chép thêm một bản để link tải trực tiếp được
+    pages_copy = ROOT / "docs" / "exercises.pdf"
+    pages_copy.parent.mkdir(parents=True, exist_ok=True)
+    pages_copy.write_bytes(OUT.read_bytes())
+    print(f"Đã cập nhật bản cho GitHub Pages: {pages_copy}")
+
 
 if __name__ == "__main__":
     main()

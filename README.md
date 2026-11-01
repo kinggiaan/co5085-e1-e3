@@ -89,11 +89,30 @@ MSA tự viết khớp `nn.MultiheadAttention` tới **1,0e-07** khi dùng chung
 | patch 4×4 (T=49) | 96,20% | 94,56% |
 | baseline | MLP 97,68% | CNN **99,10%** |
 
+Hai biến thể mở rộng: `rows/lstm` **bidirectional** (hidden 64, 49.418 tham số) đạt 97,47%;
+`rows/gru` **mean-pooling** đạt 97,73%.
+
 Đảo ngẫu nhiên thứ tự hàng khi test làm `rows/lstm` rơi từ 97,78% xuống **11,22%** — bằng chứng
 mô hình thực sự dùng thông tin thứ tự.
 
-Báo cáo đầy đủ (11 trang, có bảng và hình): [`reports/exercises.pdf`](reports/exercises.pdf),
-sinh lại bằng `python reports/build_report.py`. Việc còn lại cho ngày mai: [`TODO.md`](TODO.md).
+**A1 — CNN vs Transformer trên Tiny-ImageNet** (200 lớp, 20.000 ảnh train, 128 px):
+
+| Kiến trúc | Chế độ | Epoch | Trainable | Val acc |
+|---|---|---:|---:|---:|
+| ResNet-18 | from-scratch | 20 | 11.279.112 | 32,25% |
+| ResNet-18 | finetune | 8 | 11.279.112 | 62,68% |
+| ResNet-18 | freeze backbone | 6 | **102.600** | 53,35% |
+| Swin-T | finetune | 3 | 27.673.154 | **80,17%** |
+| Swin-T | freeze một phần | 3 | 14.339.192 | 75,00% |
+
+Pretrain đáng giá **+30 điểm** với CNN; đóng băng backbone vẫn đạt 53% chỉ với 0,9% số tham số
+trainable. ViT-B/16 không vừa 4 GB VRAM ở 224 px (đo được 5.048 MB) nên Transformer dùng Swin-T.
+
+**A2 — segmentation trên VOC 2012**: U-Net tự viết vs DeepLabV3-ResNet50 (pretrained) vs
+SegFormer-B0 (Transformer, đúng paper đang phân tích). Xem `A2/results/summary.md`.
+
+Báo cáo đầy đủ (**15 trang**, có bảng và hình): [`reports/exercises.pdf`](reports/exercises.pdf),
+sinh lại bằng `python reports/build_report.py`.
 
 ## Ghi chú
 

@@ -104,3 +104,6 @@ viết phần lớn code mẫu, chạy thí nghiệm và soạn bản nháp báo
 Nhóm chịu trách nhiệm đọc lại, chạy lại và bảo vệ từng phần khi được hỏi.
 
 <!-- Khi nộp: sửa lại đoạn trên cho đúng phạm vi thực tế, đừng để nguyên nếu không còn đúng. -->
+
+| 13:10 | A2: DeepLabV3-ResNet50 đạt **67,11% mIoU** (5 epoch, 256px); SegFormer-B0 **37,85%** (4 epoch) | `A2/results/summary.md` |
+| 13:20 | Chẩn đoán U-Net sụp về nền (92% pixel nền): đã kiểm tra mask đúng, thử lr 1e-3 và 3e-4; hướng sửa ghi trong `TODO.md` | `A2/results/` |

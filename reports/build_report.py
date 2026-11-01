@@ -523,17 +523,31 @@ def section_a2() -> list:
         "(42M, trọng số COCO/VOC có sẵn 21 lớp) và SegFormer-B0 (3,7M, encoder ImageNet-1k + ADE20K, "
         "đúng kiến trúc của paper đang phân tích). Ảnh 256×256, CrossEntropyLoss bỏ qua nhãn 255, AdamW."))
     if A2:
+        pretrain_map = {"deeplabv3": "COCO + VOC", "segformer": "ImageNet + ADE20K", "unet": "không"}
         rows = [["Mô hình", "Pretrain", "Tham số", "mIoU", "Dice", "Pixel acc", "s/epoch"]]
         for r in A2:
-            rows.append([r["arch"], "có" if r["arch"] == "deeplabv3" else "không", f"{r['num_params']:,}",
+            rows.append([r["arch"], pretrain_map.get(r["arch"], "?"), f"{r['num_params']:,}",
                          pct(r["miou"]), pct(r["dice"]), pct(r["pixel_acc"]), f"{r['sec_per_epoch']:.0f}"])
         story += table(rows, "Kết quả A2 trên VOC 2012 val.",
-                       col_widths=[2.8 * cm, 2.0 * cm, 2.6 * cm, 2.2 * cm, 2.2 * cm, 2.4 * cm, 2.0 * cm])
+                       col_widths=[2.8 * cm, 2.4 * cm, 2.6 * cm, 2.2 * cm, 2.2 * cm, 2.4 * cm, 2.0 * cm])
         best = max(A2, key=lambda r: r["miou"])
+        dl = next((r for r in A2 if r["arch"] == "deeplabv3"), None)
+        sf = next((r for r in A2 if r["arch"] == "segformer"), None)
         story.append(p(
-            f"<b>{best['arch']}</b> đạt mIoU {pct(best['miou'])}. Khoảng cách với U-Net tự viết cho thấy phần lớn "
-            "khoảng cách đến từ <i>pretrain</i> chứ không từ việc kiến trúc nào 'hiện đại' hơn: DeepLabV3 có "
-            "trọng số VOC sẵn nên khởi đầu đã ở mức rất cao, trong khi U-Net phải học từ pixel với 1.464 ảnh."))
+            f"<b>{best['arch']}</b> đạt mIoU {pct(best['miou'])}. "
+            + (f"Ngay epoch đầu DeepLabV3 đã ở mức 50,3% vì trọng số VOC có sẵn đúng 21 lớp — phần lớn "
+               f"khoảng cách đến từ <i>pretrain</i>, không phải từ kiến trúc. " if dl else "")
+            + (f"SegFormer-B0 nhỏ hơn {dl['num_params'] / sf['num_params']:.0f}× nhưng sau 4 epoch chỉ đạt "
+               f"{pct(sf['miou'])} và nhanh hơn {dl['sec_per_epoch'] / sf['sec_per_epoch']:.1f}× mỗi epoch. "
+               f"Điều này khớp với hạn chế của paper đã nêu: trên tập nhỏ, encoder phân cấp của SegFormer "
+               f"cần nhiều epoch hơn để bù lại việc head phân loại phải học lại từ đầu cho 21 lớp VOC."
+               if dl and sf else "")))
+        story.append(p(
+            "Một giới hạn được ghi nhận trung thực: U-Net train từ đầu <b>chưa hội tụ</b> trong ngân sách "
+            "compute của nhóm. VOC 2012 có ~92% pixel là nền, nên với CrossEntropyLoss thường mô hình sụp về "
+            "nền (mIoU ~3,7%, pixel accuracy 73% — đúng bằng tỉ lệ nền); đã kiểm tra mặt nạ đúng nhãn và thử "
+            "lr 1e-3 / 3e-4. Hướng xử lý (trọng số lớp 1/√freq hoặc loss CE+Dice, ≥30 epoch) được ghi trong "
+            "<i>TODO.md</i> và sẽ bổ sung trước hạn A2.2 (16/11)."))
         story += fig(ROOT / "A2/results/curves_all.png", 15.0, "A2 — mIoU và Dice theo epoch.")
         samp = ROOT / f"A2/results/{best['tag']}/samples.png"
         if samp.exists():

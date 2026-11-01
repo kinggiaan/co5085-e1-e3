@@ -25,6 +25,9 @@ from A2.train import RESULTS_DIR, main as train_main
 
 CONFIGS = ["unet", "deeplabv3", "segformer"]
 PRETRAIN = {"unet": "không", "deeplabv3": "COCO/VOC", "segformer": "ImageNet + ADE20K"}
+# Số epoch chọn theo ngân sách GPU thật (GTX 1650 4 GB): U-Net from-scratch cần nhiều epoch
+# hơn nhưng mỗi epoch ~150 s, nên 20 epoch là mức tối đa hợp lý trong một buổi.
+EPOCHS = {"unet": 20, "deeplabv3": 8, "segformer": 6}
 
 
 def read_history(path: Path) -> dict:
@@ -55,12 +58,11 @@ def main() -> list[dict]:
             results.append(json.loads(met.read_text(encoding="utf-8")))
             continue
 
-        print(f"\n=== A2 / {arch} ===", flush=True)
+        print(f"\n=== A2 / {arch} ({args.epochs or EPOCHS[arch]} epoch) ===", flush=True)
         extra = []
         if args.limit:
             extra += ["--limit", str(args.limit)]
-        if args.epochs:
-            extra += ["--epochs", str(args.epochs)]
+        extra += ["--epochs", str(args.epochs or EPOCHS[arch])]
         results.append(train_main(["--arch", arch, *extra]))
 
     out = ensure_dir(RESULTS_DIR)

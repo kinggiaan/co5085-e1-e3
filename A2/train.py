@@ -42,6 +42,9 @@ def parse_args(argv=None):
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--out-dir", default=None)
     p.add_argument("--no-plot", action="store_true")
+    p.add_argument("--no-class-weight", dest="class_weight", action="store_false",
+                   help="tắt CE có trọng số lớp (mặc định bật để chống sụp về nền)")
+    p.set_defaults(class_weight=True)
     return p.parse_args(argv)
 
 
@@ -60,6 +63,22 @@ def evaluate(model, loader, device) -> dict:
             logits = nn.functional.interpolate(logits, size=y.shape[-2:], mode="bilinear", align_corners=False)
         metric.update(logits.argmax(1), y)
     return metric.compute()
+
+
+def compute_class_weights(loader, n_classes: int = NUM_CLASSES, cap: float = 20.0) -> torch.Tensor:
+    """Trọng số nghịch tần suất pixel (có chặn trên) để chống sụp về lớp nền.
+
+    VOC 2012 có ~73% pixel là nền; nếu dùng CE thường, U-Net học cách đoán toàn nền và
+    mIoU kẹt ~4% dù loss vẫn giảm.
+    """
+    counts = torch.zeros(n_classes, dtype=torch.float64)
+    for _, y in loader:
+        vals = y[y != IGNORE_INDEX]
+        counts += torch.bincount(vals.flatten(), minlength=n_classes).double()
+    freq = counts / counts.sum().clamp(min=1)
+    w = 1.0 / (freq + 1e-6)
+    w = w / w.mean()
+    return w.clamp(max=cap).float()
 
 
 def main(argv=None) -> dict:
@@ -82,7 +101,12 @@ def main(argv=None) -> dict:
           f"| epoch {epochs} | lr {lr:g} | device {device}", flush=True)
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=args.weight_decay)
-    criterion = nn.CrossEntropyLoss(ignore_index=IGNORE_INDEX)
+    if args.class_weight:
+        w = compute_class_weights(loaders["train"]).to(device)
+        criterion = nn.CrossEntropyLoss(ignore_index=IGNORE_INDEX, weight=w)
+        print(f"[{tag}] class weight: min {w.min():.2f} / max {w.max():.2f}", flush=True)
+    else:
+        criterion = nn.CrossEntropyLoss(ignore_index=IGNORE_INDEX)
     scheduler = torch.optim.lr_scheduler.PolynomialLR(optimizer, total_iters=epochs, power=0.9)
 
     history = {"epoch": [], "train_loss": [], "val_miou": [], "val_dice": [], "val_pixel_acc": [], "epoch_time_s": []}

@@ -182,20 +182,24 @@ hàm `evaluate_permuted_rows` trong `E3/run_all.py` để bạn tham khảo các
 
 ## 3. Lộ trình tới hạn nộp
 
-Hôm nay **27/10**. E1+E2 hạn **02/11 23:59**, E3 hạn **09/11 23:59**.
+Bắt đầu **10/10**, hiện là **01/11**. E1+E2 hạn **02/11 23:59**, E3 và A1.2 hạn **09/11 23:59**,
+A2.2 hạn **16/11 23:59**.
 
-| Ngày | Việc | Xong khi |
+| Mốc | Việc | Xong khi |
 |---|---|---|
-| 27/10 (tối nay) | Chạy `smoke_test.py`; đọc `common/engine.py`, `E1/models.py`; đọc lại đề | Giải thích được training loop từng dòng |
-| 28/10 | Tự viết `E1/models.py` (3 model) + `E1/train.py`; chạy 3 model | Bảng accuracy 3 model + 3 hình curves |
-| 29/10 | Viết `E2/msa.py` + `test_msa.py` cho khớp tuyệt đối; viết `patch` tokenizer | `test_msa` in sai khác < 1e-4 |
-| 30/10 | Viết thêm `row` + `cnnstem`; chạy 6 cấu hình E2 | Bảng so sánh có cột thời gian |
-| 31/10 | Viết `E3/models.py` (rows/cols/patches × lstm/gru); chạy | Bảng E3 + baseline MLP/CNN |
-| 01/11 | Viết báo cáo PDF (E1+E2), cập nhật GitHub Pages, commit/tag | PDF + link Pages chạy được |
-| 02/11 | Buffer + nộp trước 23:59 | Tag `e1e2-final` |
-| 03–07/11 | Thí nghiệm thêm cho E3 (bidirectional, mean-pooling, đảo thứ tự) | Có 2–3 nhận xét định lượng |
-| 08/11 | Bổ sung chương E3 vào PDF, cập nhật README | PDF v2 |
-| 09/11 | Nộp E3 trước 23:59 | Tag `e3-final` |
+| 10–13/10 | `common/`: utils, `data.py`, `engine.py`, `viz.py` | Training loop tự viết chạy được |
+| 15–17/10 | `E1/models.py` (3 model) + `E1/train.py`; chạy 3 model | Bảng accuracy 3 model + 3 hình curves |
+| 18–22/10 | `E2/msa.py` + `test_msa.py` khớp tuyệt đối; 3 tokenizer; TinyViT | `test_msa` in sai khác < 1e-4 |
+| 23–24/10 | `E3/models.py` (rows/cols/patches × lstm/gru) + `run_all.py` | Bảng E3 + baseline MLP/CNN |
+| 27–29/10 | Chạy E2 (6 cấu hình), E3 (6 cấu hình + đảo thứ tự hàng) | Bảng so sánh có cột thời gian |
+| 29/10 | Báo cáo PDF v1 (E1–E3), 11 trang, cập nhật GitHub Pages | PDF + link Pages chạy được |
+| 31/10 | Dựng `A1/` (Tiny-ImageNet) và `A2/` (VOC2012), sửa nghẽn dataloader A1 | Mỗi pipeline chạy được 1 epoch |
+| 01/11 | Xong A1 (5 cấu hình), A2 (DeepLab, SegFormer), báo cáo 16 trang | Bảng số + PDF v2 |
+| 02/11 | Buffer + nộp E1+E2 trước 23:59 | Tag `e1e2-final` |
+| 03–07/11 | Sửa U-Net A2 đang sụp về nền (trọng số lớp, CE + Dice) | mIoU U-Net > 40% |
+| 08/11 | Bổ sung nhận xét E3 + A2 vào PDF, cập nhật README | PDF v3 |
+| 09/11 | Nộp E3 + A1.2 trước 23:59 | Tag `e3-final` |
+| 16/11 | Nộp A2.2 | Tag `a2-final` |
 
 Nếu chỉ có một người làm: bỏ phần "thí nghiệm thêm", giữ đúng yêu cầu tối thiểu (đề cho phép
 làm một mình).

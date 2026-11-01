@@ -99,8 +99,29 @@ def main() -> list[dict]:
     results = []
     for rep in REPRESENTATIONS:
         for cell in CELLS:
+            tag = f"{rep}_{cell}"
+            met = RESULTS_DIR / tag / "metrics.json"
+            if met.exists():
+                print(f"\n=== E3 / {tag}: đã có kết quả, bỏ qua (xoá thư mục để chạy lại) ===")
+                import json
+
+                results.append(json.loads(met.read_text(encoding="utf-8")))
+                continue
             print(f"\n=== E3 / {rep} / {cell} ===")
             results.append(train_main(["--repr", rep, "--cell", cell]))
+
+    # --- hai biến thể mở rộng (không bắt buộc, ăn điểm thảo luận) ---
+    extra_tag = RESULTS_DIR / "rows_lstm_bidir"
+    if (extra_tag / "metrics.json").exists():
+        pass
+    else:
+        print("\n=== E3 / rows / lstm / bidirectional (hidden 64) ===")
+        results.append(train_main(["--repr", "rows", "--cell", "lstm", "--bidirectional",
+                                   "--hidden", "64", "--tag", "rows_lstm_bidir"]))
+    if not (RESULTS_DIR / "rows_gru_mean" / "metrics.json").exists():
+        print("\n=== E3 / rows / gru / mean-pooling ===")
+        results.append(train_main(["--repr", "rows", "--cell", "gru", "--pooling", "mean",
+                                   "--tag", "rows_gru_mean"]))
 
     out = ensure_dir(RESULTS_DIR)
     save_json(results, out / "summary.json")

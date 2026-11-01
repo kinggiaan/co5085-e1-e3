@@ -82,6 +82,10 @@ xong. A2 chạy sau (cùng 4 GB VRAM nên không chạy song song được).
 | 10:20 | Chạy A1 phương án A: resnet finetune (8), resnet freeze_all (6), swin finetune (3), swin freeze_partial (3) | `_a1_log.txt` |
 | 10:35 | Mở rộng `reports/build_report.py`: thêm chương **A1** và **A2**, đổi tên báo cáo thành "Báo cáo coursework E1–E3 & A1–A2" | commit sau |
 | 10:40 | Điền mục **khai báo công cụ AI** (mục 1.6) với phạm vi thật: AI hỗ trợ đọc đề, soạn nháp mã nguồn và dàn ý báo cáo; nhóm tự chạy và kiểm chứng số liệu | `reports/build_report.py` |
+| 10:45 | A1 xong 5 cấu hình. Kết quả: resnet scratch **32,25%** · resnet finetune **62,68%** · resnet freeze_all **53,35%** · swin finetune **80,17%** · swin freeze_partial **75,00%** | `A1/results/summary.md` |
+| 10:50 | Chạy lại E3 `run_all.py` (có resume): thêm 2 biến thể — bidirectional LSTM (49.418 tham số, 97,47%) và GRU mean-pooling (97,73%) | `E3/results/summary.md` |
+| 10:55 | Tích hợp **SegFormer-B0** (3,72M tham số) vào A2: hạ `transformers<5` vì bản 5.x yêu cầu torch ≥2.6, cache HF chuyển vào `.hf/` (lỗi quyền ở `%USERPROFILE%\.cache`) | commit |
+| 11:00 | Mở rộng báo cáo: chương A1 (Bảng 7–8, Hình 8–10), đổi tên báo cáo thành "Coursework E1–E3 & A1–A2", 15 trang | `reports/exercises.pdf` |
 
 ## 02/11/2026 — nộp E1 + E2
 

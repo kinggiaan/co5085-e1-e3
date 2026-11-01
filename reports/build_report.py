@@ -158,7 +158,7 @@ class Report(BaseDocTemplate):
         canvas.setFont("Arial", 7.5)
         canvas.setFillColor(GREY)
         canvas.drawString(2.0 * cm, A4[1] - 1.3 * cm, "CO5085 — Học sâu và ứng dụng trong thị giác máy tính")
-        canvas.drawRightString(A4[0] - 2.0 * cm, A4[1] - 1.3 * cm, "Bài tập E1–E3")
+        canvas.drawRightString(A4[0] - 2.0 * cm, A4[1] - 1.3 * cm, "Coursework E1–E3 · A1–A2")
         canvas.setStrokeColor(colors.HexColor("#dddddd"))
         canvas.line(2.0 * cm, A4[1] - 1.45 * cm, A4[0] - 2.0 * cm, A4[1] - 1.45 * cm)
         canvas.line(2.0 * cm, 1.45 * cm, A4[0] - 2.0 * cm, 1.45 * cm)

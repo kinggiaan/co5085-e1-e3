@@ -25,3 +25,6 @@ Thumbs.db
 
 # log t?m khi ch?y dài
 _*.txt
+
+# cache HuggingFace.hf/
+*.lock

@@ -2,6 +2,7 @@
 
     python -m A2.train --arch unet --epochs 30
     python -m A2.train --arch deeplabv3 --epochs 10 --lr 1e-4
+    python -m A2.train --arch segformer --epochs 8
     python A2/train.py --arch unet --limit 100 --epochs 1     # chạy thử
 """
 from __future__ import annotations
@@ -29,7 +30,7 @@ RESULTS_DIR = Path(__file__).resolve().parent / "results"
 
 def parse_args(argv=None):
     p = argparse.ArgumentParser(description="A2: segmentation trên VOC2012")
-    p.add_argument("--arch", choices=["unet", "unet_small", "deeplabv3"], default="unet")
+    p.add_argument("--arch", choices=["unet", "unet_small", "deeplabv3", "segformer"], default="unet")
     p.add_argument("--epochs", type=int, default=None)
     p.add_argument("--img-size", type=int, default=320)
     p.add_argument("--batch-size", type=int, default=None)
@@ -44,8 +45,8 @@ def parse_args(argv=None):
     return p.parse_args(argv)
 
 
-DEFAULT_EPOCHS = {"unet": 30, "unet_small": 30, "deeplabv3": 10}
-DEFAULT_BS = {"unet": 8, "unet_small": 16, "deeplabv3": 4}
+DEFAULT_EPOCHS = {"unet": 30, "unet_small": 30, "deeplabv3": 10, "segformer": 8}
+DEFAULT_BS = {"unet": 8, "unet_small": 16, "deeplabv3": 4, "segformer": 4}
 
 
 @torch.no_grad()
@@ -165,10 +166,14 @@ def plot_curves(history: dict, path: Path, tag: str) -> None:
 
     fig, axes = plt.subplots(1, 2, figsize=(9, 3.2))
     axes[0].plot(history["epoch"], history["train_loss"], color="#1f77b4")
-    axes[0].set_xlabel("epoch"); axes[0].set_ylabel("loss"); axes[0].set_title("train loss", fontsize=9)
+    axes[0].set_xlabel("epoch")
+    axes[0].set_ylabel("loss")
+    axes[0].set_title("train loss", fontsize=9)
     axes[1].plot(history["epoch"], history["val_miou"], label="mIoU", color="#2ca02c")
     axes[1].plot(history["epoch"], history["val_dice"], label="Dice", color="#d62728")
-    axes[1].set_xlabel("epoch"); axes[1].set_title("validation", fontsize=9); axes[1].legend(frameon=False, fontsize=8)
+    axes[1].set_xlabel("epoch")
+    axes[1].set_title("validation", fontsize=9)
+    axes[1].legend(frameon=False, fontsize=8)
     fig.suptitle(f"A2 {tag}", fontsize=10)
     fig.savefig(path)
     plt.close(fig)
@@ -195,9 +200,12 @@ def plot_pred_samples(model, loader, device, path: Path, tag: str, n: int = 4) -
     axes = np.atleast_2d(axes)
     for i in range(n):
         img = (x[i].cpu() * std + mean).clamp(0, 1).permute(1, 2, 0).numpy()
-        axes[i, 0].imshow(img); axes[i, 0].set_title("ảnh", fontsize=8)
-        axes[i, 1].imshow(y[i].numpy(), vmin=0, vmax=20, cmap="tab20"); axes[i, 1].set_title("ground truth", fontsize=8)
-        axes[i, 2].imshow(pred[i].numpy(), vmin=0, vmax=20, cmap="tab20"); axes[i, 2].set_title("dự đoán", fontsize=8)
+        axes[i, 0].imshow(img)
+        axes[i, 0].set_title("ảnh", fontsize=8)
+        axes[i, 1].imshow(y[i].numpy(), vmin=0, vmax=20, cmap="tab20")
+        axes[i, 1].set_title("ground truth", fontsize=8)
+        axes[i, 2].imshow(pred[i].numpy(), vmin=0, vmax=20, cmap="tab20")
+        axes[i, 2].set_title("dự đoán", fontsize=8)
         for ax in axes[i]:
             ax.axis("off")
     fig.suptitle(f"A2 {tag} — so sánh mặt nạ", fontsize=10)

@@ -74,7 +74,11 @@ def build_model(arch: str, num_classes: int = NUM_CLASSES) -> nn.Module:
         return UNet(num_classes=num_classes, base=16)
     if arch == "deeplabv3":
         return DeepLabWrap(num_classes=num_classes, pretrained=True)
+    if arch == "segformer":
+        from A2.segformer import SegFormerWrap
+
+        return SegFormerWrap(num_classes=num_classes)
     raise ValueError(f"arch không hợp lệ: {arch}")
 
 
-DEFAULT_LR = {"unet": 1e-3, "unet_small": 1e-3, "deeplabv3": 1e-4}
+DEFAULT_LR = {"unet": 1e-3, "unet_small": 1e-3, "deeplabv3": 1e-4, "segformer": 6e-5}

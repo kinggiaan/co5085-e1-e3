@@ -5,12 +5,17 @@ Chủ đề tự chọn + phân tích paper. Mốc **A2.1** (chủ đề + paper
 
 ## Chủ đề
 
-Phân đoạn ngữ nghĩa 21 lớp trên Pascal VOC 2012. So sánh **U-Net from-scratch (CNN)** với
-**DeepLabV3-ResNet50 pretrained** — tách hai yếu tố thường bị trộn: *kiến trúc* (CNN vs Transformer)
-và *pretrain* (có vs không).
+Phân đoạn ngữ nghĩa 21 lớp trên Pascal VOC 2012. So sánh ba biến thể để tách hai yếu tố thường bị
+trộn: **kiến trúc** (CNN vs Transformer) và **pretrain** (có vs không):
+
+| Biến thể | Pretrain | Vai trò |
+|---|---|---|
+| U-Net (tự viết, 1,9M) | không | baseline CNN from-scratch — thể hiện inductive bias |
+| DeepLabV3-ResNet50 (42M) | COCO/VOC (21 lớp có sẵn) | CNN mạnh + pretrain |
+| SegFormer-B0 (3,7M) | ImageNet-1k → ADE20K (encoder) | đúng kiến trúc của paper đang phân tích |
 
 **Vì sao chọn:** không trùng bài toán phân loại của A1; nối tiếp mạch CNN-vs-Transformer sang bài
-toán dự đoán dày; vừa 4 GB VRAM (U-Net 1,9M tham số, DeepLabV3 42M); metric chuẩn tự cài được.
+toán dự đoán dày; vừa 4 GB VRAM; metric chuẩn tự cài được.
 
 ## Paper
 

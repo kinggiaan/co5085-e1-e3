@@ -1,6 +1,15 @@
-# Phiên bản đã dùng để chạy toàn bộ thí nghiệm (Python 3.11)
+# Phiên bản đã dùng để chạy toàn bộ thí nghiệm (Python 3.11, torch 2.5.1+cu121)
 torch>=2.2
 torchvision>=0.17
 numpy>=1.24
 matplotlib>=3.7
 reportlab>=4.0
+pillow>=10.0
+
+# A1/A2 — dữ liệu lớn
+datasets>=2.18         # tải VOC2012 qua mirror HuggingFace
+transformers>=4.40,<5 # SegFormer-B0 (bản 5.x yêu cầu torch>=2.6, repo dùng 2.5.1)
+
+# Ghi chú: cài transformers<5 sẽ hạ huggingface-hub xuống 0.3x, khi đó `datasets` báo xung đột.
+# VOC2012 chỉ cần tải một lần (scripts/prepare_voc2012.py). Nếu cần tải lại, chạy trong một venv
+# riêng hoặc tạm `pip install -U huggingface-hub datasets` trước khi chạy script đó.

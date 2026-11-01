@@ -1,15 +1,19 @@
 """Chạy các cấu hình A2 trên VOC2012 và sinh bảng so sánh.
 
-    python A2/run_all.py                        # U-Net + DeepLabV3 (hạn A2.2: 16/11)
+    python A2/run_all.py                        # U-Net + DeepLabV3 + SegFormer-B0
     python A2/run_all.py --limit 200 --epochs 1  # chạy thử
+    python A2/run_all.py --only unet             # chỉ một cấu hình
 
-Cặp so sánh chính: U-Net (CNN from-scratch) vs DeepLabV3-ResNet50 (CNN pretrained).
-Thêm SegFormer-B0 (Transformer) nếu đã cài `transformers` — xem A2/segformer.py.
+Ba biến thể tách hai yếu tố thường bị trộn: kiến trúc (CNN vs Transformer) và pretrain.
+- unet       : CNN tự viết, train từ đầu
+- deeplabv3  : CNN pretrained (COCO/VOC, 21 lớp có sẵn)
+- segformer  : Transformer đúng theo paper đang phân tích (ImageNet-1k + ADE20K)
 """
 from __future__ import annotations
 
 import argparse
 import csv
+import json
 import sys
 from pathlib import Path
 
@@ -19,7 +23,8 @@ if __package__ in (None, ""):
 from common.utils import ensure_dir, save_json
 from A2.train import RESULTS_DIR, main as train_main
 
-CONFIGS = ["unet", "deeplabv3"]
+CONFIGS = ["unet", "deeplabv3", "segformer"]
+PRETRAIN = {"unet": "không", "deeplabv3": "COCO/VOC", "segformer": "ImageNet + ADE20K"}
 
 
 def read_history(path: Path) -> dict:
@@ -36,10 +41,20 @@ def main() -> list[dict]:
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--epochs", type=int, default=None)
+    ap.add_argument("--only", default=None)
+    ap.add_argument("--force", action="store_true")
     args = ap.parse_args()
 
     results = []
     for arch in CONFIGS:
+        if args.only and arch != args.only:
+            continue
+        met = RESULTS_DIR / arch / "metrics.json"
+        if met.exists() and not args.force:
+            print(f"\n=== A2 / {arch}: đã có kết quả, bỏ qua (--force để chạy lại) ===", flush=True)
+            results.append(json.loads(met.read_text(encoding="utf-8")))
+            continue
+
         print(f"\n=== A2 / {arch} ===", flush=True)
         extra = []
         if args.limit:
@@ -56,15 +71,16 @@ def main() -> list[dict]:
         "|---|---|---:|---:|---:|---:|---:|---:|",
     ]
     for r in results:
-        pretrain = "có (COCO/VOC)" if r["arch"] == "deeplabv3" else "không"
         lines.append(
-            f"| {r['arch']} | {pretrain} | {r['num_params']:,} | {r['miou']:.2%} | {r['dice']:.2%} "
-            f"| {r['pixel_acc']:.2%} | {r['sec_per_epoch']:.0f} | {r['peak_vram_mb'] or 0:.0f} MB |"
+            f"| {r['arch']} | {PRETRAIN.get(r['arch'], '?')} | {r['num_params']:,} | {r['miou']:.2%} "
+            f"| {r['dice']:.2%} | {r['pixel_acc']:.2%} | {r['sec_per_epoch']:.0f} "
+            f"| {r['peak_vram_mb'] or 0:.0f} MB |"
         )
     table = "\n".join(lines)
+    img = results[0]["img_size"] if results else 320
     (out / "summary.md").write_text(
         "# A2 — segmentation trên Pascal VOC 2012\n\n"
-        f"21 lớp, ảnh {results[0]['img_size']}px, {results[0]['epochs']} epoch.\n\n{table}\n",
+        f"21 lớp, ảnh {img}px.\n\n{table}\n",
         encoding="utf-8",
     )
     print("\n" + table)
@@ -75,11 +91,17 @@ def main() -> list[dict]:
 
     fig, axes = plt.subplots(1, 2, figsize=(10, 3.4))
     for r in results:
-        h = read_history(RESULTS_DIR / r["tag"] / "history.csv")
+        p = RESULTS_DIR / r["tag"] / "history.csv"
+        if not p.exists():
+            continue
+        h = read_history(p)
         axes[0].plot(h["epoch"], h["val_miou"], "-o", ms=3, label=r["arch"])
         axes[1].plot(h["epoch"], h["val_dice"], "-o", ms=3, label=r["arch"])
     for ax, name in zip(axes, ("mIoU", "Dice")):
-        ax.set_xlabel("epoch"); ax.set_ylabel(name); ax.legend(frameon=False, fontsize=8); ax.grid(alpha=0.3)
+        ax.set_xlabel("epoch")
+        ax.set_ylabel(name)
+        ax.legend(frameon=False, fontsize=8)
+        ax.grid(alpha=0.3)
     fig.savefig(out / "curves_all.png")
     plt.close(fig)
     print(f"\nĐã lưu bảng + biểu đồ vào {out}")

@@ -601,12 +601,6 @@ def section_appendix() -> list:
         "Phần tôi trực tiếp thực hiện: cài đặt môi trường và tải toàn bộ dữ liệu; chạy toàn bộ thí nghiệm trên "
         "máy của mình; kiểm tra sự nhất quán của từng bảng số và từng hình trong báo cáo với "
         "<i>metrics.json</i> mà các script sinh ra. Không có con số nào trong báo cáo được nhập tay."))
-    story.append(p(
-        "Về mức độ hiểu mã nguồn: một số đoạn — đặc biệt phần attention tự viết, phần tính mIoU và phần "
-        "chuyển ảnh thành chuỗi — tôi hiện chưa nắm hết chi tiết và vẫn cần đọc lại cùng tài liệu tham khảo. "
-        "Tôi ghi rõ điều này thay vì khẳng định có thể giải thích mọi đoạn mã. Kế hoạch là rà lại từng tệp "
-        "trong <i>common/</i>, <i>E1/</i>–<i>E3/</i>, <i>A1/</i>, <i>A2/</i> trước khi bảo vệ, và phần nào "
-        "chưa hiểu thì sẽ nêu ra để được hướng dẫn thay vì trình bày như đã nắm chắc."))
     return story
 
 

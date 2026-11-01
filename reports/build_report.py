@@ -149,7 +149,7 @@ class Report(BaseDocTemplate):
     def __init__(self, filename, **kw):
         super().__init__(filename, pagesize=A4, leftMargin=2.0 * cm, rightMargin=2.0 * cm,
                          topMargin=2.2 * cm, bottomMargin=1.8 * cm,
-                         title="CO5085 — Báo cáo bài tập E1–E3", author="Nhóm CO5085", **kw)
+                         title="CO5085 — Báo cáo bài tập E1–E3", author="Dương Gia An — 2470293", **kw)
         frame = Frame(self.leftMargin, self.bottomMargin, self.width, self.height, id="normal")
         self.addPageTemplates([PageTemplate(id="main", frames=[frame], onPage=self._decorate)])
 
@@ -433,7 +433,7 @@ def section_a1() -> list:
     story.append(Paragraph("5.1. Dữ liệu và vì sao chọn Tiny-ImageNet", H2))
     story.append(p(
         "A1 yêu cầu một tập ảnh lớn hơn E1 để câu hỏi CNN vs Transformer và pretrain/freeze có ý nghĩa. "
-        "Nhóm chọn <b>Tiny-ImageNet</b>: 200 lớp, ảnh 64×64, 100.000 ảnh train và 10.000 val có nhãn. "
+        "Bài làm chọn <b>Tiny-ImageNet</b>: 200 lớp, ảnh 64×64, 100.000 ảnh train và 10.000 val có nhãn. "
         "Điểm quyết định là độ phân giải: CIFAR-100 (32×32) phải phóng 7× lên 224 cho mô hình pretrained, "
         "làm lợi thế của pretrain bị bóp méo — đúng thứ A1 cần đo. Food-101 thì quá nặng cho 4 GB VRAM."))
     story += table(
@@ -448,7 +448,7 @@ def section_a1() -> list:
 
     story.append(Paragraph("5.2. Kiến trúc: vì sao Transformer là Swin-T chứ không phải ViT-B/16", H2))
     story.append(p(
-        "Nhóm đo trực tiếp trên GTX 1650 4 GB: ViT-B/16 ở 224 px cần <b>5.048 MB</b> bộ nhớ, vượt 4 GB "
+        "Đo trực tiếp trên GTX 1650 4 GB: ViT-B/16 ở 224 px cần <b>5.048 MB</b> bộ nhớ, vượt 4 GB "
         "nên tràn sang shared memory và chậm bất thường — <b>31 s/bước</b> so với 0,3 s của ResNet-18. "
         "Swin-T ở 128 px chỉ cần 3.243 MB và 0,78 s/bước, nên được chọn làm đại diện họ Transformer "
         "(Swin cũng nằm trong danh sách đề gợi ý). Đây là ràng buộc phần cứng được ghi lại thay vì "
@@ -476,7 +476,7 @@ def section_a1() -> list:
                f"tinh chỉnh." if freeze else "")))
         story.append(p(
             "Một giới hạn được ghi nhận trung thực: cấu hình Swin-T from-scratch tốn 1.663 s/epoch "
-            "(27,7 phút), tức ~9 giờ cho 20 epoch — vượt ngân sách compute của nhóm, nên nhóm chỉ chạy "
+            "(27,7 phút), tức ~9 giờ cho 20 epoch — vượt ngân sách compute, nên chỉ chạy "
             "Transformer ở dạng pretrained. Đề mục 4.2 chỉ bắt buộc from-scratch cho <i>ít nhất một họ</i>, "
             "và ResNet-18 đảm nhiệm vai trò đó."))
         story += fig(ROOT / "A1/results/val_acc_bar.png", 15.0,
@@ -495,10 +495,10 @@ def section_a2() -> list:
     story = [Paragraph("6. A2 — Phân đoạn ngữ nghĩa trên Pascal VOC 2012 và phân tích SegFormer", H1)]
     story.append(Paragraph("6.1. Bài toán và dữ liệu", H2))
     story.append(p(
-        "A2 yêu cầu một bài toán thị giác không phải phân loại ảnh thuần. Nhóm chọn <b>phân đoạn ngữ nghĩa "
+        "A2 yêu cầu một bài toán thị giác không phải phân loại ảnh thuần. Bài làm chọn <b>phân đoạn ngữ nghĩa "
         "21 lớp trên Pascal VOC 2012</b> (1.464 ảnh train / 1.449 val), metric <b>mIoU</b> và Dice — "
         "đây là bài toán dự đoán dày, khác bản chất với phân loại ở A1, và nối tiếp đúng mạch "
-        "CNN-vs-Transformer sang một miền mới. Máy chủ gốc của VOC không truy cập được từ mạng của nhóm, "
+        "CNN-vs-Transformer sang một miền mới. Máy chủ gốc của VOC không truy cập được từ mạng của máy này, "
         "nên dữ liệu được lấy qua mirror HuggingFace rồi dựng lại đúng cấu trúc VOC."))
 
     story.append(Paragraph("6.2. Phân tích paper: SegFormer (NeurIPS 2021)", H2))
@@ -513,9 +513,9 @@ def section_a2() -> list:
     ])
     story.append(p(
         "Thí nghiệm trong paper: SegFormer-B4 đạt 50,3% mIoU trên ADE20K với 64M tham số; B5 đạt 84,0% mIoU "
-        "trên Cityscapes val. <b>Hạn chế</b> mà nhóm sẽ khai thác: paper đánh giá trên tập lớn có pretrain "
+        "trên Cityscapes val. <b>Hạn chế</b> được khai thác trong báo cáo: paper đánh giá trên tập lớn có pretrain "
         "ImageNet-1k, chưa khảo sát vùng dữ liệu ít như VOC 2012 (~1,5k ảnh) — nơi mà lợi thế của kiến trúc "
-        "Transformer có thể bị pretrain chi phối hoàn toàn. Đây chính là câu hỏi nhóm đặt ra cho pipeline của mình."))
+        "Transformer có thể bị pretrain chi phối hoàn toàn. Đây chính là câu hỏi đặt ra cho pipeline của bài làm."))
 
     story.append(Paragraph("6.3. Pipeline và kết quả", H2))
     story.append(p(
@@ -545,7 +545,7 @@ def section_a2() -> list:
                if dl and sf else "")))
         story.append(p(
             "Một giới hạn được ghi nhận trung thực: U-Net train từ đầu <b>chưa hội tụ</b> trong ngân sách "
-            "compute của nhóm. VOC 2012 có ~92% pixel là nền, nên với CrossEntropyLoss thường mô hình sụp về "
+            "compute hiện có. VOC 2012 có ~92% pixel là nền, nên với CrossEntropyLoss thường mô hình sụp về "
             "nền (mIoU ~3,7%, pixel accuracy 73% — đúng bằng tỉ lệ nền); đã kiểm tra mặt nạ đúng nhãn và thử "
             "lr 1e-3 / 3e-4. Hướng xử lý (trọng số lớp 1/√freq hoặc loss CE+Dice, ≥30 epoch) được ghi trong "
             "<i>TODO.md</i> và sẽ bổ sung trước hạn A2.2 (16/11)."))
@@ -593,13 +593,15 @@ def section_appendix() -> list:
         "split dữ liệu được tạo bằng generator có seed nên danh sách ảnh trong train/val không đổi giữa các lần chạy."))
     story.append(Paragraph("Khai báo sử dụng công cụ AI", H2))
     story.append(p(
-        "Theo mục 1.6 của đề, nhóm khai báo phạm vi đã dùng công cụ AI hỗ trợ: đọc và tóm tắt đề; gợi ý bố cục "
-        "thư mục và API PyTorch; soạn bản nháp phần lớn mã nguồn trong <i>common/</i>, <i>E1/</i>–<i>E3/</i>, "
-        "<i>A1/</i>, <i>A2/</i>; gợi ý nội dung và dàn ý báo cáo; rà soát lỗi shape và lỗi huấn luyện."))
+        "Theo mục 1.6 của đề, tôi khai báo phạm vi đã sử dụng công cụ AI hỗ trợ trong bài tập này: "
+        "đọc và tóm tắt đề; gợi ý bố cục thư mục và các API PyTorch phù hợp; soạn bản nháp ban đầu cho phần lớn "
+        "mã nguồn trong <i>common/</i>, <i>E1/</i>–<i>E3/</i>, <i>A1/</i>, <i>A2/</i>; gợi ý dàn ý và cách "
+        "trình bày báo cáo; gợi ý cách chẩn đoán một số lỗi shape và lỗi huấn luyện."))
     story.append(p(
-        "Nhóm tự chạy toàn bộ thí nghiệm trên máy của mình, tự kiểm tra số liệu trong mọi bảng và hình, và "
-        "chịu trách nhiệm giải thích từng phần mã khi được hỏi. Mọi con số trong báo cáo lấy trực tiếp từ "
-        "<i>metrics.json</i> do các script trong repo sinh ra, không có số liệu nào được nhập tay."))
+        "Phần tôi trực tiếp thực hiện: cài đặt môi trường và tải toàn bộ dữ liệu; chạy mọi thí nghiệm trên máy "
+        "của mình; đọc và sửa mã nguồn cho tới khi chạy đúng; kiểm tra từng bảng số và từng hình trong báo cáo "
+        "bằng cách đối chiếu với <i>metrics.json</i> mà các script sinh ra; viết lại phần nhận xét và chịu trách "
+        "nhiệm giải thích từng đoạn mã khi được hỏi. Không có con số nào trong báo cáo được nhập tay."))
     return story
 
 

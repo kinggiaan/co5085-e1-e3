@@ -68,6 +68,7 @@ Kết quả: E2 patch 67,9/69,6 · row 85,4/89,2 · cnnstem 82,1/90,6; E3 rows/g
 | 19:35 | Sửa lỗi matplotlib: tensor `(3,H,W)` đã chuẩn hoá → phải đảo chuẩn hoá trước khi `imshow` | commit sau |
 | 19:53 | Đo lại trong vòng lặp thật: **73,3 s/epoch** (chờ data 27,9 · compute 39,1 · val 6,3) | `_a1_log.txt` |
 | 20:15 | Bật `A1/run_all.py --limit 20000` (6 cấu hình, ~3 h) — chạy qua đêm | `A1/results/` |
+| 13:35 (01/11) | Điền tên + MSSV (Dương Gia An — 2470293) vào bìa báo cáo, trang chủ và worklog | commit cục bộ |
 
 Ghi chú: job A1 chạy **đêm 31/10 sang 01/11**; kết quả ghi vào `A1/results/` khi từng cấu hình
 xong. A2 chạy sau (cùng 4 GB VRAM nên không chạy song song được).

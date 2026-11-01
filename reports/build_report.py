@@ -186,8 +186,9 @@ def cover() -> list:
     rows = [
         ["Học kỳ", "HK261 (2026–2027)"],
         ["Giảng viên", "Lê Thành Sách, Nguyễn Quốc Minh"],
-        ["Nhóm", "<điền mã nhóm / họ tên 2 thành viên>"],
-        ["Dữ liệu", "MNIST (28×28, 10 lớp)"],
+        ["Sinh viên", "Dương Gia An — MSSV 2470293"],
+        ["Hình thức", "Cá nhân (đề cho phép làm một mình)"],
+        ["Dữ liệu", "MNIST (E1–E3), Tiny-ImageNet (A1), Pascal VOC 2012 (A2)"],
         ["Ngày hoàn thành", date.today().strftime("%d/%m/%Y")],
     ]
     t = Table([[Paragraph(a, CELL_LEFT), Paragraph(b, CELL_LEFT)] for a, b in rows],

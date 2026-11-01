@@ -518,9 +518,10 @@ def section_a2() -> list:
 
     story.append(Paragraph("6.3. Pipeline và kết quả", H2))
     story.append(p(
-        "Hai biến thể được cài đặt để tách hai yếu tố thường bị trộn lẫn — <b>kiến trúc</b> (CNN vs Transformer) "
-        "và <b>pretrain</b> (có vs không): U-Net tự viết (1,9M tham số, train từ đầu) và DeepLabV3-ResNet50 "
-        "(42M, trọng số COCO/VOC có sẵn 21 lớp). Ảnh 320×320, CrossEntropyLoss bỏ qua nhãn 255, AdamW."))
+        "Ba biến thể được cài đặt để tách hai yếu tố thường bị trộn lẫn — <b>kiến trúc</b> (CNN vs Transformer) "
+        "và <b>pretrain</b> (có vs không): U-Net tự viết (1,9M tham số, train từ đầu), DeepLabV3-ResNet50 "
+        "(42M, trọng số COCO/VOC có sẵn 21 lớp) và SegFormer-B0 (3,7M, encoder ImageNet-1k + ADE20K, "
+        "đúng kiến trúc của paper đang phân tích). Ảnh 256×256, CrossEntropyLoss bỏ qua nhãn 255, AdamW."))
     if A2:
         rows = [["Mô hình", "Pretrain", "Tham số", "mIoU", "Dice", "Pixel acc", "s/epoch"]]
         for r in A2:

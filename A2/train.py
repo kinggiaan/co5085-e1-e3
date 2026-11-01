@@ -42,9 +42,10 @@ def parse_args(argv=None):
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--out-dir", default=None)
     p.add_argument("--no-plot", action="store_true")
-    p.add_argument("--no-class-weight", dest="class_weight", action="store_false",
-                   help="tắt CE có trọng số lớp (mặc định bật để chống sụp về nền)")
-    p.set_defaults(class_weight=True)
+    p.add_argument("--class-weight", dest="class_weight", action="store_true",
+                   help="bật CE có trọng số lớp (mặc định TẮT: trọng số nghịch tần suất làm "
+                        "mô hình pretrained mất ổn định; chỉ cân nhắc cho U-Net train từ đầu)")
+    p.set_defaults(class_weight=False)
     return p.parse_args(argv)
 
 
@@ -109,6 +110,12 @@ def main(argv=None) -> dict:
         criterion = nn.CrossEntropyLoss(ignore_index=IGNORE_INDEX)
     scheduler = torch.optim.lr_scheduler.PolynomialLR(optimizer, total_iters=epochs, power=0.9)
 
+    config = {"exercise": "A2", "arch": args.arch, "epochs": epochs, "img_size": args.img_size,
+              "batch_size": bs, "lr": lr, "weight_decay": args.weight_decay,
+              "limit": args.limit, "seed": args.seed, "dataset": "VOC2012-seg",
+              "class_weight": bool(args.class_weight),
+              "num_params": n_params, "num_params_trainable": n_train}
+
     history = {"epoch": [], "train_loss": [], "val_miou": [], "val_dice": [], "val_pixel_acc": [], "epoch_time_s": []}
     best_miou, best_state = -1.0, None
     t_start = time.perf_counter()
@@ -146,14 +153,29 @@ def main(argv=None) -> dict:
         print(f"epoch {epoch:02d}/{epochs} | loss {running/max(seen,1):.4f} | mIoU {val['miou']:.4f} "
               f"| Dice {val['dice']:.4f} | pixel acc {val['pixel_acc']:.4f} | {dt:5.1f}s", flush=True)
 
+        # lưu tạm sau mỗi epoch: nếu job bị dừng giữa chừng (throttle, tắt máy) vẫn còn số liệu
+        partial = {
+            **config,
+            "tag": tag, "epochs_done": epoch, "best_val_miou": best_miou,
+            "miou": val["miou"], "dice": val["dice"], "pixel_acc": val["pixel_acc"],
+            "num_params": n_params, "num_params_trainable": n_train,
+            "train_time_s": round(time.perf_counter() - t_start, 1),
+            "sec_per_epoch": round((time.perf_counter() - t_start) / epoch, 1),
+            "peak_vram_mb": round(torch.cuda.max_memory_allocated() / 1024**2) if device.type == "cuda" else None,
+        }
+        save_json(partial, out_dir / "metrics.json")
+        with (out_dir / "history.csv").open("w", newline="", encoding="utf-8") as f:
+            w = csv.writer(f)
+            w.writerow(["epoch", "train_loss", "val_miou", "val_dice", "val_pixel_acc", "epoch_time_s"])
+            for row in zip(history["epoch"], history["train_loss"], history["val_miou"], history["val_dice"],
+                           history["val_pixel_acc"], history["epoch_time_s"]):
+                w.writerow(row)
+
     train_time = time.perf_counter() - t_start
     if best_state is not None:
         model.load_state_dict(best_state)
     final = evaluate(model, loaders["val"], device)
 
-    config = {"exercise": "A2", "arch": args.arch, "epochs": epochs, "img_size": args.img_size,
-              "batch_size": bs, "lr": lr, "weight_decay": args.weight_decay,
-              "limit": args.limit, "seed": args.seed, "dataset": "VOC2012-seg"}
     metrics = {
         **config, "tag": tag,
         "num_params": n_params, "num_params_trainable": n_train,

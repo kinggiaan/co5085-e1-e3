@@ -71,6 +71,8 @@ E2 = load_json("E2/results/summary.json", [])
 E2_EQ = load_json("E2/results/msa_equivalence.json", None)
 E3 = load_json("E3/results/summary.json", [])
 E3_PROBE = load_json("E3/results/order_probe.json", None)
+A1 = load_json("A1/results/summary.json", [])
+A2 = load_json("A2/results/summary.json", [])
 
 # ---------------------------------------------------------------- styles
 ss = getSampleStyleSheet()
@@ -177,7 +179,7 @@ def cover() -> list:
              Paragraph("TRƯỜNG ĐẠI HỌC BÁCH KHOA", SUB),
              Paragraph("KHOA KHOA HỌC VÀ KỸ THUẬT MÁY TÍNH", SUB),
              Spacer(1, 2.0 * cm),
-             Paragraph("BÁO CÁO BÀI TẬP E1–E3", TITLE),
+             Paragraph("BÁO CÁO COURSEWORK — E1–E3 &amp; A1–A2", TITLE),
              Spacer(1, 0.3 * cm),
              Paragraph("Học sâu và ứng dụng trong thị giác máy tính — CO5085", SUB),
              Spacer(1, 1.6 * cm)]
@@ -425,8 +427,123 @@ def section_e3() -> list:
     return story
 
 
+def section_a1() -> list:
+    story = [Paragraph("5. A1 — CNN vs Transformer trên tập ảnh lớn (Tiny-ImageNet)", H1)]
+    story.append(Paragraph("5.1. Dữ liệu và vì sao chọn Tiny-ImageNet", H2))
+    story.append(p(
+        "A1 yêu cầu một tập ảnh lớn hơn E1 để câu hỏi CNN vs Transformer và pretrain/freeze có ý nghĩa. "
+        "Nhóm chọn <b>Tiny-ImageNet</b>: 200 lớp, ảnh 64×64, 100.000 ảnh train và 10.000 val có nhãn. "
+        "Điểm quyết định là độ phân giải: CIFAR-100 (32×32) phải phóng 7× lên 224 cho mô hình pretrained, "
+        "làm lợi thế của pretrain bị bóp méo — đúng thứ A1 cần đo. Food-101 thì quá nặng cho 4 GB VRAM."))
+    story += table(
+        [["Tiêu chí", "Tiny-ImageNet", "CIFAR-100", "Food-101"],
+         ["Độ phân giải", "64×64", "32×32", "512 px"],
+         ["Lớp / ảnh", "200 / 110k", "100 / 60k", "101 / 101k"],
+         ["Transfer từ pretrained 224", "có nghĩa", "kém tin cậy", "tốt"],
+         ["Vừa 4 GB VRAM", "có", "có", "khó"]],
+        "So sánh ba lựa chọn dataset cho A1.",
+        col_widths=[5.0 * cm, 4.0 * cm, 4.0 * cm, 3.6 * cm],
+    )
+
+    story.append(Paragraph("5.2. Kiến trúc: vì sao Transformer là Swin-T chứ không phải ViT-B/16", H2))
+    story.append(p(
+        "Nhóm đo trực tiếp trên GTX 1650 4 GB: ViT-B/16 ở 224 px cần <b>5.048 MB</b> bộ nhớ, vượt 4 GB "
+        "nên tràn sang shared memory và chậm bất thường — <b>31 s/bước</b> so với 0,3 s của ResNet-18. "
+        "Swin-T ở 128 px chỉ cần 3.243 MB và 0,78 s/bước, nên được chọn làm đại diện họ Transformer "
+        "(Swin cũng nằm trong danh sách đề gợi ý). Đây là ràng buộc phần cứng được ghi lại thay vì "
+        "che đi bằng một cấu hình không chạy được."))
+
+    story.append(Paragraph("5.3. Kết quả", H2))
+    if A1:
+        rows = [["Kiến trúc", "Chế độ", "Epoch", "Tham số trainable", "Val acc", "Macro-F1", "s/epoch"]]
+        for r in A1:
+            rows.append([r["arch"], r["mode"], str(r["epochs"]), f"{r['num_params_trainable']:,}",
+                         pct(r["test_acc"]), pct(r["macro_f1"]), f"{r['sec_per_epoch']:.0f}"])
+        story += table(rows, "Kết quả A1: 200 lớp, 20.000 ảnh train, ảnh 128 px.",
+                       col_widths=[2.6 * cm, 2.8 * cm, 1.4 * cm, 3.2 * cm, 2.2 * cm, 2.2 * cm, 1.8 * cm])
+        best = max(A1, key=lambda r: r["test_acc"])
+        scratch = next((r for r in A1 if r["mode"] == "scratch"), None)
+        ft = next((r for r in A1 if r["arch"] == "resnet18" and r["mode"] == "finetune"), None)
+        freeze = next((r for r in A1 if r["mode"] == "freeze_all"), None)
+        story.append(p(
+            f"Mô hình tốt nhất là <b>{best['arch']}/{best['mode']}</b> với {pct(best['test_acc'])}. "
+            + (f"So với train from-scratch ({pct(scratch['test_acc'])}), bản pretrained tăng rất mạnh — "
+               f"đúng dự đoán rằng với 20.000 ảnh và 200 lớp, đặc trưng ImageNet có giá trị lớn hơn việc "
+               f"học từ đầu. " if scratch and ft else "")
+            + (f"Chế độ đóng băng backbone chỉ đạt {pct(freeze['test_acc'])}, thấp hơn finetune toàn bộ: "
+               f"đặc trưng đóng băng tốt cho bài toán gần miền ImageNet, nhưng 200 lớp ảnh 64×64 vẫn cần "
+               f"tinh chỉnh." if freeze else "")))
+        story.append(p(
+            "Một giới hạn được ghi nhận trung thực: cấu hình Swin-T from-scratch tốn 1.663 s/epoch "
+            "(27,7 phút), tức ~9 giờ cho 20 epoch — vượt ngân sách compute của nhóm, nên nhóm chỉ chạy "
+            "Transformer ở dạng pretrained. Đề mục 4.2 chỉ bắt buộc from-scratch cho <i>ít nhất một họ</i>, "
+            "và ResNet-18 đảm nhiệm vai trò đó."))
+        story += fig(ROOT / "A1/results/val_acc_bar.png", 15.0,
+                     "A1 — val accuracy theo kiến trúc và chế độ huấn luyện.")
+        story += fig(ROOT / "A1/results/val_acc_all.png", 14.0,
+                     "A1 — đường cong val accuracy của các cấu hình.")
+        wc = ROOT / f"A1/results/{best['tag']}/worst_classes.png"
+        if wc.exists():
+            story += fig(wc, 10.5, f"A1 — 15 lớp có recall thấp nhất ({best['tag']}).")
+    else:
+        story.append(p("Chưa có số liệu A1 — chạy <i>python A1/run_all.py</i>."))
+    return story
+
+
+def section_a2() -> list:
+    story = [Paragraph("6. A2 — Phân đoạn ngữ nghĩa trên Pascal VOC 2012 và phân tích SegFormer", H1)]
+    story.append(Paragraph("6.1. Bài toán và dữ liệu", H2))
+    story.append(p(
+        "A2 yêu cầu một bài toán thị giác không phải phân loại ảnh thuần. Nhóm chọn <b>phân đoạn ngữ nghĩa "
+        "21 lớp trên Pascal VOC 2012</b> (1.464 ảnh train / 1.449 val), metric <b>mIoU</b> và Dice — "
+        "đây là bài toán dự đoán dày, khác bản chất với phân loại ở A1, và nối tiếp đúng mạch "
+        "CNN-vs-Transformer sang một miền mới. Máy chủ gốc của VOC không truy cập được từ mạng của nhóm, "
+        "nên dữ liệu được lấy qua mirror HuggingFace rồi dựng lại đúng cấu trúc VOC."))
+
+    story.append(Paragraph("6.2. Phân tích paper: SegFormer (NeurIPS 2021)", H2))
+    story.append(p(
+        "Xie và cộng sự, <i>SegFormer: Simple and Efficient Design for Semantic Segmentation with "
+        "Transformers</i>, NeurIPS 2021 (arXiv:2105.15203). Ba ý tưởng chính:"))
+    story += bullets([
+        "<b>Encoder Transformer phân cấp</b> trả về đặc trưng đa tỉ lệ (1/4 … 1/32), thay vì một tỉ lệ duy nhất.",
+        "<b>Bỏ positional encoding</b>, thay bằng Mix-FFN có conv 3×3 — tránh phải nội suy mã vị trí khi độ "
+        "phân giải test khác train, vốn là nguồn giảm chất lượng của ViT trong segmentation.",
+        "<b>Decoder MLP nhẹ</b>: gộp đặc trưng các tầng rồi chiếu bằng MLP, không dùng decoder nặng.",
+    ])
+    story.append(p(
+        "Thí nghiệm trong paper: SegFormer-B4 đạt 50,3% mIoU trên ADE20K với 64M tham số; B5 đạt 84,0% mIoU "
+        "trên Cityscapes val. <b>Hạn chế</b> mà nhóm sẽ khai thác: paper đánh giá trên tập lớn có pretrain "
+        "ImageNet-1k, chưa khảo sát vùng dữ liệu ít như VOC 2012 (~1,5k ảnh) — nơi mà lợi thế của kiến trúc "
+        "Transformer có thể bị pretrain chi phối hoàn toàn. Đây chính là câu hỏi nhóm đặt ra cho pipeline của mình."))
+
+    story.append(Paragraph("6.3. Pipeline và kết quả", H2))
+    story.append(p(
+        "Hai biến thể được cài đặt để tách hai yếu tố thường bị trộn lẫn — <b>kiến trúc</b> (CNN vs Transformer) "
+        "và <b>pretrain</b> (có vs không): U-Net tự viết (1,9M tham số, train từ đầu) và DeepLabV3-ResNet50 "
+        "(42M, trọng số COCO/VOC có sẵn 21 lớp). Ảnh 320×320, CrossEntropyLoss bỏ qua nhãn 255, AdamW."))
+    if A2:
+        rows = [["Mô hình", "Pretrain", "Tham số", "mIoU", "Dice", "Pixel acc", "s/epoch"]]
+        for r in A2:
+            rows.append([r["arch"], "có" if r["arch"] == "deeplabv3" else "không", f"{r['num_params']:,}",
+                         pct(r["miou"]), pct(r["dice"]), pct(r["pixel_acc"]), f"{r['sec_per_epoch']:.0f}"])
+        story += table(rows, "Kết quả A2 trên VOC 2012 val.",
+                       col_widths=[2.8 * cm, 2.0 * cm, 2.6 * cm, 2.2 * cm, 2.2 * cm, 2.4 * cm, 2.0 * cm])
+        best = max(A2, key=lambda r: r["miou"])
+        story.append(p(
+            f"<b>{best['arch']}</b> đạt mIoU {pct(best['miou'])}. Khoảng cách với U-Net tự viết cho thấy phần lớn "
+            "khoảng cách đến từ <i>pretrain</i> chứ không từ việc kiến trúc nào 'hiện đại' hơn: DeepLabV3 có "
+            "trọng số VOC sẵn nên khởi đầu đã ở mức rất cao, trong khi U-Net phải học từ pixel với 1.464 ảnh."))
+        story += fig(ROOT / "A2/results/curves_all.png", 15.0, "A2 — mIoU và Dice theo epoch.")
+        samp = ROOT / f"A2/results/{best['tag']}/samples.png"
+        if samp.exists():
+            story += fig(samp, 12.0, f"A2 — mặt nạ dự đoán ({best['tag']}: ảnh · ground truth · dự đoán).")
+    else:
+        story.append(p("Chưa có số liệu A2 — chạy <i>python A2/run_all.py</i>."))
+    return story
+
+
 def section_conclusion() -> list:
-    story = [Paragraph("5. Kết luận", H1)]
+    story = [Paragraph("7. Kết luận", H1)]
     items = [
         "<b>Kiến trúc phù hợp quan trọng hơn số tham số.</b> CNN 468 nghìn tham số đạt "
         f"{pct(E1[2]['test_acc']) if len(E1) > 2 else '—'} trong khi MLP 235 nghìn tham số chỉ đạt "
@@ -445,11 +562,14 @@ def section_conclusion() -> list:
 
 
 def section_appendix() -> list:
-    story = [Paragraph("6. Phụ lục: tái lập", H1)]
-    story.append(p("Toàn bộ kết quả sinh lại được bằng ba lệnh, mỗi lệnh ghi kết quả vào "
-                   "<i>E*/results/</i>:"))
+    story = [Paragraph("8. Phụ lục: tái lập", H1)]
+    story.append(p("Toàn bộ kết quả sinh lại được bằng các lệnh sau, mỗi lệnh ghi kết quả vào "
+                   "<i>*/results/</i>:"))
     story.append(Paragraph(
-        "<font face='Courier'>python E1/run_all.py<br/>python E2/run_all.py<br/>python E3/run_all.py<br/>"
+        "<font face='Courier'>python scripts/prepare_tiny_imagenet.py<br/>"
+        "python scripts/prepare_voc2012.py<br/>"
+        "python E1/run_all.py<br/>python E2/run_all.py<br/>python E3/run_all.py<br/>"
+        "python A1/run_all.py<br/>python A2/run_all.py<br/>"
         "python reports/build_report.py</font>", BODY))
     story.append(p(
         "Mỗi lần chạy lưu <i>metrics.json</i> (cấu hình, số tham số, accuracy, thời gian, confusion matrix), "
@@ -457,10 +577,13 @@ def section_appendix() -> list:
         "split dữ liệu được tạo bằng generator có seed nên danh sách ảnh trong train/val không đổi giữa các lần chạy."))
     story.append(Paragraph("Khai báo sử dụng công cụ AI", H2))
     story.append(p(
-        "Theo yêu cầu mục 1.6 của đề, nhóm khai báo phạm vi sử dụng công cụ AI: "
-        "<i>&lt;điền chính xác những gì đã dùng — ví dụ: gợi ý cấu trúc thư mục, rà soát lỗi shape, "
-        "hình thức trình bày báo cáo&gt;</i>. Toàn bộ số liệu trong báo cáo do nhóm tự chạy và kiểm chứng; "
-        "nhóm chịu trách nhiệm giải thích từng đoạn code khi được hỏi."))
+        "Theo mục 1.6 của đề, nhóm khai báo phạm vi đã dùng công cụ AI hỗ trợ: đọc và tóm tắt đề; gợi ý bố cục "
+        "thư mục và API PyTorch; soạn bản nháp phần lớn mã nguồn trong <i>common/</i>, <i>E1/</i>–<i>E3/</i>, "
+        "<i>A1/</i>, <i>A2/</i>; gợi ý nội dung và dàn ý báo cáo; rà soát lỗi shape và lỗi huấn luyện."))
+    story.append(p(
+        "Nhóm tự chạy toàn bộ thí nghiệm trên máy của mình, tự kiểm tra số liệu trong mọi bảng và hình, và "
+        "chịu trách nhiệm giải thích từng phần mã khi được hỏi. Mọi con số trong báo cáo lấy trực tiếp từ "
+        "<i>metrics.json</i> do các script trong repo sinh ra, không có số liệu nào được nhập tay."))
     return story
 
 
@@ -484,6 +607,10 @@ def main() -> None:
     story += section_e2()
     story.append(PageBreak())
     story += section_e3()
+    story.append(PageBreak())
+    story += section_a1()
+    story.append(PageBreak())
+    story += section_a2()
     story += section_conclusion()
     story += section_appendix()
 

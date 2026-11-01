@@ -72,18 +72,23 @@ Kết quả: E2 patch 67,9/69,6 · row 85,4/89,2 · cnnstem 82,1/90,6; E3 rows/g
 Ghi chú: job A1 chạy **đêm 31/10 sang 01/11**; kết quả ghi vào `A1/results/` khi từng cấu hình
 xong. A2 chạy sau (cùng 4 GB VRAM nên không chạy song song được).
 
-## 01/11/2026 — (điền khi làm xong)
+## 01/11/2026 — hoàn thiện A1, mở rộng báo cáo
 
-- [ ] Xem `A1/results/summary.md` (job đêm) và chạy `A2/run_all.py`.
-- [ ] Điền họ tên + MSSV ở trang bìa báo cáo và trang chủ.
-- [ ] Điền mục khai báo công cụ AI (đề mục 1.6).
-- [ ] 2 thí nghiệm E3 thêm: `--bidirectional --hidden 64`, `--pooling mean`.
-- [ ] Viết nhận xét riêng cho từng chương.
-- [ ] Tag `a1-1`, `a2-1` và đẩy lên GitHub.
+| Giờ | Việc | Kiểm chứng |
+|---|---|---|
+| 10:05 | Rà lại kết quả job đêm: `resnet18_scratch` đạt **32,25%** val acc (20 epoch, 26,6 phút) | `A1/results/resnet18_scratch/metrics.json` |
+| 10:10 | Đo lại Swin-T: **1.663 s/epoch** → 9 h cho 20 epoch, vượt ngân sách → chuyển phương án A: bỏ `swin_t/scratch`, giữ Transformer ở dạng pretrained (đề mục 4.2 chỉ bắt buộc from-scratch cho ít nhất một họ) | `A1/run_all.py` |
+| 10:15 | Thêm resume cho `A1/run_all.py` (bỏ qua cấu hình đã có `metrics.json`) để không mất công chạy lại | commit sau |
+| 10:20 | Chạy A1 phương án A: resnet finetune (8), resnet freeze_all (6), swin finetune (3), swin freeze_partial (3) | `_a1_log.txt` |
+| 10:35 | Mở rộng `reports/build_report.py`: thêm chương **A1** và **A2**, đổi tên báo cáo thành "Báo cáo coursework E1–E3 & A1–A2" | commit sau |
+| 10:40 | Điền mục **khai báo công cụ AI** (mục 1.6) với phạm vi thật: AI hỗ trợ đọc đề, soạn nháp mã nguồn và dàn ý báo cáo; nhóm tự chạy và kiểm chứng số liệu | `reports/build_report.py` |
 
 ## 02/11/2026 — nộp E1 + E2
 
-- [ ] Tag `e1e2-final`, push tag trước 23:59 GMT+7.
+- [ ] Chạy `A2/run_all.py` (U-Net + DeepLabV3) — phải sau A1 vì cùng 4 GB VRAM.
+- [ ] Điền họ tên + MSSV (bìa báo cáo, `docs/index.html`, `docs/worklog.md`).
+- [ ] 2 thí nghiệm E3 thêm: `--bidirectional --hidden 64`, `--pooling mean`.
+- [ ] Tag `a1-1`, `a2-1`, `e1e2-final` và đẩy lên GitHub.
 - [ ] Kiểm tra link Pages mở được PDF.
 
 ---

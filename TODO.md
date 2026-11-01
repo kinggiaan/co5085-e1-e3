@@ -1,51 +1,33 @@
-# Việc để lại cho ngày mai (01/11)
+# Việc còn lại
 
-Hôm nay (31/10) đã xong: E1, E2, E3 chạy đủ, báo cáo PDF v1, code + kết quả đã commit.
-Phần dưới đây là việc **bạn** làm — mỗi mục là một commit, đừng gộp.
+Cập nhật 01/11 chiều. Trạng thái: **E1–E3 xong**, **A1 xong**, **A2 xong 2/3 biến thể**.
 
-## Bắt buộc trước khi nộp (02/11)
+## Còn lại cho A2.2 (hạn 16/11)
 
-- [ ] **Đọc hết `reports/exercises.pdf`** một lượt, ghi lại chỗ nào bạn thấy khó hiểu — đó chính là chỗ giảng viên sẽ hỏi.
-- [ ] Trang bìa: điền mã nhóm + họ tên 2 thành viên (`reports/build_report.py`, biến `rows` trong `cover()`), chạy lại `python reports/build_report.py`.
-- [ ] §6 "Khai báo sử dụng công cụ AI": điền đúng những gì đã dùng (đề mục 1.6 bắt buộc).
-- [ ] Mỗi chương thêm 2–3 câu nhận xét **của bạn** — chỗ nào bất ngờ, chỗ nào khác dự đoán ban đầu.
-  Gợi ý: patch tokenize chỉ 68% trong khi cnnstem 90%; đảo thứ tự hàng làm rows/lstm rơi từ 97,8% xuống 11,2%.
+- [ ] **U-Net from-scratch đang sụp về nền** (mIoU ~3,7%, pixel acc 73% = đúng tỉ lệ nền).
+      Mask đã kiểm tra đúng (nhãn 0–20 + 255); đã thử lr 1e-3 và 3e-4 trong 2–3 epoch. Hướng sửa:
+      1. Trọng số lớp `w = 1/√freq`, chuẩn hoá rồi chặn `[0.2, 10]` — **đừng** chặn sau khi
+         chuẩn hoá như bản cũ (bản cũ cho nền trọng số 0,01 nên mô hình loạn).
+      2. Hoặc loss `CE + Dice` (Dice chịu mất cân bằng tốt hơn CE).
+      3. Chạy ≥30 epoch, lr 3e-4, ảnh 256.
+      ```powershell
+      python -m A2.train --arch unet --epochs 30 --lr 3e-4 --img-size 256
+      ```
+- [ ] Cập nhật báo cáo: `python reports/build_report.py` (chương 6 sẽ tự thêm dòng U-Net).
+- [ ] (khuyến nghị) video demo ngắn cho A2 — đề mục 7.1.2 có gợi ý.
 
-## Nên làm (ăn điểm, không tốn nhiều thời gian)
+## Còn lại để nộp
 
-- [ ] Thêm 2 thí nghiệm E3 rồi cập nhật bảng:
-  ```powershell
-  python -m E3.train --repr rows --cell lstm --bidirectional --hidden 64 --out-dir E3/results/rows_lstm_bidir
-  python -m E3.train --repr rows --cell gru  --pooling mean --out-dir E3/results/rows_gru_mean
-  ```
-  Rồi so sánh: bidirectional có đáng 2× tham số không? mean-pooling vs last-hidden?
-- [ ] `docs/worklog.md`: nhật ký theo ngày (10/10 nếu bạn có bằng chứng thật, 27/10–02/11 phần còn lại).
+- [ ] Điền **họ tên + MSSV** ở: `reports/build_report.py` (`cover()`), `docs/index.html`,
+      `docs/worklog.md`.
+- [ ] Đọc lại mục **khai báo công cụ AI** trong PDF, sửa cho đúng phạm vi bạn muốn khai.
+- [ ] Đọc lại PDF một lượt, thêm 2–3 câu nhận xét riêng cho mỗi chương.
+- [ ] `git push` lần cuối + `git tag -f e1e2-final` (hạn E1+E2: **02/11 23:59**); E3: 09/11.
+- [ ] Kiểm tra https://kinggiaan.github.io/co5085-e1-e3/
 
-## Đưa lên GitHub (mục 1.4 của đề)
+## Ghi chú kỹ thuật (để không lặp lại)
 
-- [ ] Tạo repo trên GitHub, rồi:
-  ```powershell
-  git remote add origin https://github.com/<username>/co5085-e1-e3.git
-  git push -u origin main
-  ```
-- [ ] Sửa `docs/index.html`: thay `<username>` bằng tài khoản thật.
-- [ ] Settings → Pages → Source: `main` / thư mục `/docs`.
-- [ ] Kiểm tra link Pages mở được repo + `reports/exercises.pdf`.
-- [ ] `git tag e1e2-final` + push tag (đề chấm theo commit trước 23:59 GMT+7).
-
-## Trước khi hết hạn: tự kiểm tra hiểu bài
-
-Trả lời được 6 câu này mà không nhìn code là bạn sẵn sàng vấn đáp:
-
-- [ ] Vì sao `CrossEntropyLoss` nhận logits, không nhận xác suất?
-- [ ] BatchNorm khác gì giữa `train()` và `eval()`?
-- [ ] Vì sao chia attention cho `√d_k`?
-- [ ] Vì sao phải `reshape(B,N,H,D).transpose(1,2)` thay vì `reshape(B,N,H,D)`?
-- [ ] LSTM giảm vanishing gradient nhờ đâu?
-- [ ] Vì sao CNN vẫn thắng LSTM trên MNIST dù LSTM "hiện đại" hơn?
-
-## Còn lại cho tuần sau (E3, hạn 09/11)
-
-- [ ] Viết chương E3 kỹ hơn: giải thích cổng LSTM/GRU bằng lời của bạn, không chép công thức.
-- [ ] Thử thêm biểu diễn chuỗi thứ tư (ví dụ patch 7×7 → 16 token) và so sánh.
-- [ ] Cập nhật `reports/exercises.pdf` bản cuối, tag `e3-final`.
+- Máy throttle còn ~1.150 MHz khi nóng (75 °C) → epoch chậm 2–3×. Job dài nên chạy lúc máy nguội.
+- `num_workers > 0` **luôn chậm hơn** trên Windows với các dataset này — giữ 0 và nạp sẵn RAM.
+- Không dùng `Get-Content`/`Set-Content` của PowerShell để sửa file tiếng Việt trong repo:
+  đã 3 lần làm hỏng UTF-8. Dùng editor hoặc Python với `encoding="utf-8"`.

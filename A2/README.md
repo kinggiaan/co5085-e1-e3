@@ -52,15 +52,22 @@ python A2\run_all.py                 # cả hai + bảng + biểu đồ
 python A2\run_all.py --limit 100 --epochs 1   # chạy thử nhanh
 ```
 
-## Kết quả sơ bộ (chạy thử, chưa huấn luyện đủ)
+## Kết quả (ảnh 256×256, GTX 1650 4 GB)
 
-| Mô hình | Pretrain | mIoU | Ghi chú |
-|---|---|---:|---|
-| U-Net | không | — | cần ≥20 epoch mới hội tụ |
-| DeepLabV3-R50 | COCO/VOC | **56,4%** | đo trên 40 ảnh val, *không* finetune — trọng số VOC có sẵn 21 lớp |
+| Mô hình | Pretrain | Tham số | Epoch | mIoU | Dice | Pixel acc | s/epoch |
+|---|---|---:|---:|---:|---:|---:|---:|
+| DeepLabV3-ResNet50 | COCO/VOC | 42.004.074 | 5 | **67,11%** | 79,18% | 91,96% | 555 |
+| SegFormer-B0 | ImageNet + ADE20K | 3.719.541 | 4 | 37,85% | 49,79% | 86,28% | 176 |
+| U-Net | không | 1.927.669 | — | *chưa xong* | — | — | ~155 |
 
-Con số 56,4% này là mốc tham chiếu quan trọng: nó cho thấy phần lớn "điểm" của DeepLabV3 đến từ
-pretrain, không phải từ kiến trúc — đúng luận điểm cần làm rõ ở A2.2.
+**Nhận xét:** DeepLabV3 khởi đầu đã ở 50,27% mIoU ngay epoch 1 vì trọng số VOC có sẵn 21 lớp —
+phần lớn khoảng cách đến từ **pretrain**, không phải kiến trúc. SegFormer-B0 (3,7M tham số, nhỏ hơn
+11×) đạt 37,85% chỉ sau 4 epoch, nhanh hơn 3× mỗi epoch.
+
+**U-Net chưa xong — chẩn đoán:** với 92% pixel là nền, CE thường khiến U-Net sụp về nền
+(mIoU ~3,7%, pixel acc 73% = đúng tỉ lệ nền) ở cả lr 1e-3 và 3e-4 trong 2–3 epoch. Đã kiểm tra
+mask đúng (nhãn 0–20 + 255). Hướng xử lý để lại: trọng số lớp dạng `1/√freq` (chặn [0,2; 10])
+hoặc Dice + CE, chạy ≥30 epoch. Ghi ở `TODO.md`.
 
 ## Cấu trúc
 

@@ -75,8 +75,22 @@
   <h2>5. Trạng thái</h2>
   <table>
     <tr><th>Mốc</th><th>Nội dung</th><th>Trạng thái</th></tr>
+  <h2>5. Kết quả (ảnh 256×256)</h2>
+  <table>
+    <tr><th>Mô hình</th><th>Pretrain</th><th>Tham số</th><th>Epoch</th><th>mIoU</th><th>Dice</th></tr>
+    <tr><td>DeepLabV3-ResNet50</td><td>COCO/VOC</td><td>42.004.074</td><td>5</td><td><b>67,11%</b></td><td>79,18%</td></tr>
+    <tr><td>SegFormer-B0</td><td>ImageNet + ADE20K</td><td>3.719.541</td><td>4</td><td>37,85%</td><td>49,79%</td></tr>
+    <tr><td>U-Net (tự viết)</td><td>không</td><td>1.927.669</td><td>—</td><td>đang chạy</td><td>—</td></tr>
+  </table>
+  <p class="muted">DeepLabV3 đạt 50,27% mIoU ngay epoch đầu vì trọng số VOC có sẵn — phần lớn khoảng
+  cách đến từ <b>pretrain</b>, không phải kiến trúc. SegFormer-B0 nhỏ hơn 11×, sau 4 epoch đạt
+  37,85% và nhanh hơn 3× mỗi epoch.</p>
+
+  <h2>6. Trạng thái</h2>
+  <table>
+    <tr><th>Mốc</th><th>Nội dung</th><th>Trạng thái</th></tr>
     <tr><td>A2.1</td><td>chủ đề + paper + dataset + metric + kế hoạch pipeline</td><td><span class="tag done">xong</span></td></tr>
-    <tr><td>A2.2</td><td>pipeline chạy được, so sánh ≥2 biến thể, phân tích paper, video demo</td><td><span class="tag warn">đang làm</span></td></tr>
+    <tr><td>A2.2</td><td>pipeline chạy được, so sánh ≥2 biến thể, phân tích paper, video demo</td><td><span class="tag done">xong 2/3 biến thể</span></td></tr>
   </table>
 
   <footer>

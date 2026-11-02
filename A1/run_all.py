@@ -30,10 +30,13 @@ from A1.train import RESULTS_DIR, main as train_main
 # GTX 1650). Đề mục 4.1 yêu cầu có cả CNN và Transformer -> Transformer vẫn có mặt ở
 # dạng pretrained (finetune + freeze_partial). Đề mục 4.2 chỉ bắt buộc from-scratch
 # cho "ít nhất một họ" -> ResNet-18 đảm nhiệm.
+# Bổ sung resnet18/freeze_partial: đề mục 4.3 liệt kê ba kiểu đóng băng như MỘT bộ, nên
+# ResNet-18 phải có đủ freeze toàn bộ backbone / freeze một phần / full finetune.
 CONFIGS = [
     ("resnet18", "scratch", 20),
     ("resnet18", "finetune", 8),
     ("resnet18", "freeze_all", 6),
+    ("resnet18", "freeze_partial", 6),
     ("swin_t", "finetune", 3),
     ("swin_t", "freeze_partial", 3),
 ]

@@ -22,7 +22,7 @@ if __package__ in (None, ""):
 
 from common.utils import ensure_dir, get_device, save_json, set_seed
 from A2.data import IGNORE_INDEX, NUM_CLASSES, build_loaders
-from A2.metrics import SegMetric
+from A2.metrics import SegMetric, soft_dice_loss
 from A2.models import DEFAULT_LR, build_model
 
 RESULTS_DIR = Path(__file__).resolve().parent / "results"
@@ -45,6 +45,10 @@ def parse_args(argv=None):
     p.add_argument("--class-weight", dest="class_weight", action="store_true",
                    help="bật CE có trọng số lớp (mặc định TẮT: trọng số nghịch tần suất làm "
                         "mô hình pretrained mất ổn định; chỉ cân nhắc cho U-Net train từ đầu)")
+    p.add_argument("--loss", choices=["ce", "ce_dice"], default="ce_dice",
+                   help="ce = CrossEntropyLoss; ce_dice = CE + Dice (mặc định, cần cho U-Net "
+                        "khi nền chiếm ~92% pixel)")
+    p.add_argument("--dice-weight", type=float, default=1.0)
     p.set_defaults(class_weight=False)
     return p.parse_args(argv)
 
@@ -110,10 +114,20 @@ def main(argv=None) -> dict:
         criterion = nn.CrossEntropyLoss(ignore_index=IGNORE_INDEX)
     scheduler = torch.optim.lr_scheduler.PolynomialLR(optimizer, total_iters=epochs, power=0.9)
 
+    use_dice = args.loss == "ce_dice"
+    if use_dice:
+        print(f"[{tag}] loss = CE + {args.dice_weight:g}×Dice", flush=True)
+
+    def compute_loss(logits: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        loss = criterion(logits, target)
+        if use_dice:
+            loss = loss + args.dice_weight * soft_dice_loss(logits, target)
+        return loss
+
     config = {"exercise": "A2", "arch": args.arch, "epochs": epochs, "img_size": args.img_size,
               "batch_size": bs, "lr": lr, "weight_decay": args.weight_decay,
               "limit": args.limit, "seed": args.seed, "dataset": "VOC2012-seg",
-              "class_weight": bool(args.class_weight),
+              "class_weight": bool(args.class_weight), "loss": args.loss,
               "num_params": n_params, "num_params_trainable": n_train}
 
     history = {"epoch": [], "train_loss": [], "val_miou": [], "val_dice": [], "val_pixel_acc": [], "epoch_time_s": []}
@@ -130,7 +144,7 @@ def main(argv=None) -> dict:
             logits = model(x)
             if logits.shape[-2:] != y.shape[-2:]:
                 logits = nn.functional.interpolate(logits, size=y.shape[-2:], mode="bilinear", align_corners=False)
-            loss = criterion(logits, y)
+            loss = compute_loss(logits, y)
             loss.backward()
             nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()

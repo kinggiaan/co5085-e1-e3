@@ -182,7 +182,7 @@ hàm `evaluate_permuted_rows` trong `E3/run_all.py` để bạn tham khảo các
 
 ## 3. Lộ trình tới hạn nộp
 
-Bắt đầu **10/10**, hiện là **01/11**. E1+E2 hạn **02/11 23:59**, E3 và A1.2 hạn **09/11 23:59**,
+Bắt đầu **10/10**, hiện là **04/11**. E1+E2 hạn **02/11 23:59**, E3 và A1.2 hạn **09/11 23:59**,
 A2.2 hạn **16/11 23:59**.
 
 | Mốc | Việc | Xong khi |

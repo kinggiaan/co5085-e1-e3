@@ -2,9 +2,35 @@
 from __future__ import annotations
 
 import numpy as np
+import torch
+import torch.nn.functional as F
 
 NUM_CLASSES = 21
 IGNORE_INDEX = 255
+
+
+def soft_dice_loss(logits: torch.Tensor, target: torch.Tensor, num_classes: int = NUM_CLASSES,
+                   ignore_index: int = IGNORE_INDEX, eps: float = 1.0) -> torch.Tensor:
+    """Dice loss (soft) trên toàn batch, bỏ qua pixel nhãn 255.
+
+    Dùng kèm CrossEntropyLoss khi lớp nền chiếm phần lớn pixel (VOC 2012: ~92%). CE một mình
+    có cực tiểu tầm thường là "đoán toàn nền"; Dice tính theo phần giao/hợp nên kéo mô hình
+    phải phủ đúng cả các lớp hiếm.
+    """
+    probs = F.softmax(logits, dim=1)
+    valid = (target != ignore_index).unsqueeze(1).float()          # (B,1,H,W)
+
+    tgt = target.clone()
+    tgt[target == ignore_index] = 0
+    onehot = F.one_hot(tgt, num_classes).permute(0, 3, 1, 2).float()  # (B,C,H,W)
+
+    probs = probs * valid
+    onehot = onehot * valid
+    dims = (0, 2, 3)
+    inter = (probs * onehot).sum(dims)
+    card = probs.sum(dims) + onehot.sum(dims)
+    dice = (2 * inter + eps) / (card + eps)
+    return 1.0 - dice.mean()
 
 
 class SegMetric:

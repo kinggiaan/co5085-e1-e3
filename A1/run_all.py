@@ -77,6 +77,15 @@ def main() -> list[dict]:
         results.append(train_main(["--arch", arch, "--mode", mode, *extra]))
 
     out = ensure_dir(RESULTS_DIR)
+    # gộp với kết quả đã có để `--only` không làm mất bảng tổng hợp
+    merged = {}
+    if (out / "summary.json").exists():
+        for r in json.loads((out / "summary.json").read_text(encoding="utf-8")):
+            merged[r["tag"]] = r
+    for r in results:
+        merged[r["tag"]] = r
+    order = [f"{a}_{m}" for a, m, _ in CONFIGS]
+    results = sorted(merged.values(), key=lambda r: order.index(r["tag"]) if r["tag"] in order else 99)
     save_json(results, out / "summary.json")
 
     lines = [

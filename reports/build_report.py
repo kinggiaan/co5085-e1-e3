@@ -479,6 +479,15 @@ def section_a1() -> list:
             "(27,7 phút), tức ~9 giờ cho 20 epoch — vượt ngân sách compute, nên chỉ chạy "
             "Transformer ở dạng pretrained. Đề mục 4.2 chỉ bắt buộc from-scratch cho <i>ít nhất một họ</i>, "
             "và ResNet-18 đảm nhiệm vai trò đó."))
+        fa = next((r for r in A1 if r["arch"] == "resnet18" and r["mode"] == "freeze_all"), None)
+        fp = next((r for r in A1 if r["arch"] == "resnet18" and r["mode"] == "freeze_partial"), None)
+        if fa and fp and ft:
+            story.append(p(
+                f"Trên ResNet-18, ba kiểu đóng băng cho một dãy đơn điệu đúng như kỳ vọng: đóng băng toàn bộ "
+                f"backbone {pct(fa['test_acc'])} (chỉ {fa['num_params_trainable']:,} tham số trainable) → "
+                f"đóng băng một phần {pct(fp['test_acc'])} ({fp['num_params_trainable']:,}) → finetune toàn bộ "
+                f"{pct(ft['test_acc'])}. Nói cách khác, mở thêm càng nhiều tầng cho học thì kết quả càng tốt, "
+                f"nhưng 53% chỉ với 0,9% tham số là mức đánh đổi rất đáng cân nhắc khi compute hạn chế."))
         story += fig(ROOT / "A1/results/val_acc_bar.png", 15.0,
                      "A1 — val accuracy theo kiến trúc và chế độ huấn luyện.")
         story += fig(ROOT / "A1/results/val_acc_all.png", 14.0,
@@ -544,11 +553,21 @@ def section_a2() -> list:
                f"cần nhiều epoch hơn để bù lại việc head phân loại phải học lại từ đầu cho 21 lớp VOC."
                if dl and sf else "")))
         story.append(p(
-            "Một giới hạn được ghi nhận trung thực: U-Net train từ đầu <b>chưa hội tụ</b> trong ngân sách "
-            "compute hiện có. VOC 2012 có ~92% pixel là nền, nên với CrossEntropyLoss thường mô hình sụp về "
-            "nền (mIoU ~3,7%, pixel accuracy 73% — đúng bằng tỉ lệ nền); đã kiểm tra mặt nạ đúng nhãn và thử "
-            "lr 1e-3 / 3e-4. Hướng xử lý (trọng số lớp 1/√freq hoặc loss CE+Dice, ≥30 epoch) được ghi trong "
-            "<i>TODO.md</i> và sẽ bổ sung trước hạn A2.2 (16/11)."))
+            "Về baseline U-Net train từ đầu: VOC 2012 có ~92% pixel là nền, nên CrossEntropyLoss thuần có cực "
+            "tiểu tầm thường là “đoán toàn nền” và mô hình mắc kẹt ở mIoU ~3,7%. Hai lần sửa đã thử: trọng số "
+            "lớp nghịch tần suất (không ổn định) và loss CE + Dice (giữ được, dùng cho kết quả dưới đây). "
+            "Để chắc chắn lỗi không nằm ở kiến trúc, một phép kiểm tra overfit 2 ảnh được chạy "
+            "(<i>A2/check_overfit.py</i>): sau 80 bước, mIoU trên chính 2 ảnh đó đạt 71,5% và pixel accuracy "
+            "99,4% — tức kiến trúc và loss học được, giới hạn nằm ở số epoch so với ngân sách GPU. "
+            "Đây là lý do U-Net chỉ dừng ở mức thấp trong bảng, và việc tăng epoch được ghi ở <i>TODO.md</i>."))
+        unet = next((r for r in A2 if r["arch"] == "unet"), None)
+        if unet:
+            story.append(p(
+                f"Kết quả U-Net sau {unet['epochs']} epoch (CE + Dice, lr {unet['lr']:g}): mIoU "
+                f"{pct(unet['miou'])}, Dice {pct(unet['dice'])}, pixel accuracy {pct(unet['pixel_acc'])}. "
+                f"Con số này thấp hơn nhiều so với hai mô hình pretrained, nhưng nó đo đúng điều cần đo: "
+                f"với ~1.500 ảnh huấn luyện và 20 epoch, một CNN tự viết chưa thể cạnh tranh với đặc trưng "
+                f"đã học sẵn từ ImageNet/COCO."))
         story += fig(ROOT / "A2/results/curves_all.png", 15.0, "A2 — mIoU và Dice theo epoch.")
         samp = ROOT / f"A2/results/{best['tag']}/samples.png"
         if samp.exists():

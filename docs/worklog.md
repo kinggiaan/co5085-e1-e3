@@ -114,6 +114,19 @@ mean-pooling 97,73%.
 
 Việc còn lại xem `TODO.md`.
 
+## 02–03/11 — bổ sung cho đủ yêu cầu A1/A2
+
+| Ngày | Việc | Kiểm chứng |
+|---|---|---|
+| 02/11 | Thêm `resnet18/freeze_partial` — đề mục 4.3 liệt kê ba kiểu đóng băng như một bộ, nên ResNet-18 phải đủ cả ba | `A1/results/resnet18_freeze_partial/` |
+| 02/11 | Sửa `A1/run_all.py`: chạy `--only` không còn ghi đè bảng tổng hợp (gộp theo tag) | `A1/results/summary.json` |
+| 02/11 | A2: thêm Dice loss vào `A2/metrics.py`; chạy U-Net 20 epoch với CE + Dice | `A2/results/unet/` |
+| 03/11 | Kiểm tra overfit 2 ảnh (`A2/check_overfit.py`): mIoU 71,5%, pixel acc 99,4% sau 80 bước — xác nhận kiến trúc/loss đúng, thiếu epoch | `A2/check_overfit.py` |
+| 03/11 | Viết `A2/make_demo.py`, xuất `docs/a2_demo.mp4`, nhúng video vào trang A2 | `docs/a2_demo.mp4` |
+
+Dãy đóng băng của ResNet-18 giờ đơn điệu: freeze_all **53,35%** (102.600 tham số) →
+freeze_partial **58,73%** (8,5M) → finetune **62,68%** (11,3M).
+
 ---
 
 ## Khai báo sử dụng công cụ AI (đề mục 1.6)

@@ -16,6 +16,11 @@ def soft_dice_loss(logits: torch.Tensor, target: torch.Tensor, num_classes: int 
     Dùng kèm CrossEntropyLoss khi lớp nền chiếm phần lớn pixel (VOC 2012: ~92%). CE một mình
     có cực tiểu tầm thường là "đoán toàn nền"; Dice tính theo phần giao/hợp nên kéo mô hình
     phải phủ đúng cả các lớp hiếm.
+
+    Lưu ý quan trọng: chỉ lấy trung bình trên các lớp **có mặt trong target** của batch.
+    Nếu lấy trung bình cả 21 lớp, các lớp vắng mặt luôn cho dice = 1 (tử = mẫu = eps) và làm
+    loãng mất tín hiệu — bản đầu tiên mắc đúng lỗi này nên Dice chỉ ~0,09 dù mô hình đoán
+    toàn nền, và U-Net không thoát được cực tiểu đó.
     """
     probs = F.softmax(logits, dim=1)
     valid = (target != ignore_index).unsqueeze(1).float()          # (B,1,H,W)
@@ -30,7 +35,10 @@ def soft_dice_loss(logits: torch.Tensor, target: torch.Tensor, num_classes: int 
     inter = (probs * onehot).sum(dims)
     card = probs.sum(dims) + onehot.sum(dims)
     dice = (2 * inter + eps) / (card + eps)
-    return 1.0 - dice.mean()
+
+    present = (onehot.sum(dims) > 0).float()                       # lớp có trong target
+    loss = 1.0 - (dice * present).sum() / present.sum().clamp(min=1.0)
+    return loss
 
 
 class SegMetric:

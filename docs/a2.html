@@ -72,13 +72,6 @@
   <p>Ba biến thể này cho phép tách hai yếu tố thường bị trộn: <b>kiến trúc</b> (CNN vs Transformer)
   và <b>pretrain</b> (có vs không).</p>
 
-  <h2>5. Video demo</h2>
-  <p>Chạy mô hình trên vài ảnh validation: ảnh gốc · ground truth · dự đoán.</p>
-  <video controls width="100%" preload="metadata" style="max-width:900px;border-radius:8px">
-    <source src="a2_demo.mp4" type="video/mp4">
-    Trình duyệt không hỗ trợ video — <a href="a2_demo.mp4">tải trực tiếp</a>.
-  </video>
-
   <h2>5. Kết quả (ảnh 256×256)</h2>
   <table>
     <tr><th>Mô hình</th><th>Pretrain</th><th>Tham số</th><th>Epoch</th><th>mIoU</th><th>Dice</th></tr>
@@ -93,7 +86,14 @@
   (<code>A2/check_overfit.py</code>) đạt mIoU 71,5% — xác nhận kiến trúc và loss đúng, giới hạn nằm
   ở số epoch.</p>
 
-  <h2>6. Trạng thái</h2>
+  <h2>6. Video demo</h2>
+  <p>Chạy mô hình trên vài ảnh validation: ảnh gốc · ground truth · dự đoán.</p>
+  <video controls width="100%" preload="metadata" style="max-width:900px;border-radius:8px">
+    <source src="a2_demo.mp4" type="video/mp4">
+    Trình duyệt không hỗ trợ video — <a href="a2_demo.mp4">tải trực tiếp</a>.
+  </video>
+
+  <h2>7. Trạng thái</h2>
   <table>
     <tr><th>Mốc</th><th>Nội dung</th><th>Trạng thái</th></tr>
     <tr><td>A2.1</td><td>chủ đề + paper + dataset + metric + kế hoạch pipeline</td><td><span class="tag done">xong</span></td></tr>

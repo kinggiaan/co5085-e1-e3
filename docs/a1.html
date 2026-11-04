@@ -78,20 +78,22 @@
   <table>
     <tr><th>Kiến trúc</th><th>Chế độ</th><th>Epoch</th><th>Trainable</th><th>Val acc</th><th>s/epoch</th></tr>
     <tr><td>ResNet-18</td><td>from-scratch</td><td>20</td><td>11.279.112</td><td>32,25%</td><td>80</td></tr>
-    <tr><td>ResNet-18</td><td>finetune</td><td>8</td><td>11.279.112</td><td>62,68%</td><td>81</td></tr>
-    <tr><td>ResNet-18</td><td>freeze backbone</td><td>6</td><td>102.600</td><td>53,35%</td><td>45</td></tr>
-    <tr><td>Swin-T</td><td>finetune</td><td>3</td><td>27.673.154</td><td><b>80,17%</b></td><td>348</td></tr>
+    <tr><td>ResNet-18</td><td>freeze toàn bộ backbone</td><td>6</td><td>102.600</td><td>53,35%</td><td>45</td></tr>
+    <tr><td>ResNet-18</td><td>freeze một phần (layer4)</td><td>6</td><td>8.496.328</td><td>58,73%</td><td>45</td></tr>
+    <tr><td>ResNet-18</td><td>full finetune</td><td>8</td><td>11.279.112</td><td>62,68%</td><td>81</td></tr>
+    <tr><td>Swin-T</td><td>full finetune</td><td>3</td><td>27.673.154</td><td><b>80,17%</b></td><td>348</td></tr>
     <tr><td>Swin-T</td><td>freeze một phần</td><td>3</td><td>14.339.192</td><td>75,00%</td><td>181</td></tr>
   </table>
-  <p class="muted">Nhận xét: pretrain đáng giá <b>+30 điểm</b> với CNN (32,25% → 62,68%); đóng băng
-  backbone vẫn đạt 53,35% chỉ với 0,9% số tham số trainable. Swin-T pretrained vượt ResNet-18
-  khoảng 17 điểm nhưng tốn 4,3× thời gian mỗi epoch.</p>
+  <p class="muted">Nhận xét: ba kiểu đóng băng trên ResNet-18 cho dãy đơn điệu — freeze toàn bộ
+  <b>53,35%</b> (0,9% tham số) → freeze một phần <b>58,73%</b> (75%) → finetune <b>62,68%</b> (100%).
+  Pretrain đáng giá <b>+30 điểm</b> so với train từ đầu (32,25% → 62,68%). Swin-T pretrained vượt
+  ResNet-18 khoảng 17 điểm nhưng tốn 4,3× thời gian mỗi epoch.</p>
 
   <h2>7. Trạng thái</h2>
   <table>
     <tr><th>Mốc</th><th>Nội dung</th><th>Trạng thái</th></tr>
     <tr><td>A1.1</td><td>dataset, split, augmentation, kiến trúc, kế hoạch freeze/pretrain</td><td><span class="tag done">xong</span></td></tr>
-    <tr><td>A1.2</td><td>5 cấu hình + bảng + biểu đồ + thảo luận</td><td><span class="tag done">xong</span></td></tr>
+    <tr><td>A1.2</td><td>6 cấu hình + bảng + biểu đồ + thảo luận</td><td><span class="tag done">xong</span></td></tr>
   </table>
 
   <footer>

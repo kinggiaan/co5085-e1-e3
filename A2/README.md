@@ -58,16 +58,22 @@ python A2\run_all.py --limit 100 --epochs 1   # chạy thử nhanh
 |---|---|---:|---:|---:|---:|---:|---:|
 | DeepLabV3-ResNet50 | COCO/VOC | 42.004.074 | 5 | **67,11%** | 79,18% | 91,96% | 555 |
 | SegFormer-B0 | ImageNet + ADE20K | 3.719.541 | 4 | 37,85% | 49,79% | 86,28% | 176 |
-| U-Net | không | 1.927.669 | — | *chưa xong* | — | — | ~155 |
+| U-Net | không | 1.927.669 | 35 | 8,88% | 12,67% | 75,70% | 116 |
 
 **Nhận xét:** DeepLabV3 khởi đầu đã ở 50,27% mIoU ngay epoch 1 vì trọng số VOC có sẵn 21 lớp —
 phần lớn khoảng cách đến từ **pretrain**, không phải kiến trúc. SegFormer-B0 (3,7M tham số, nhỏ hơn
 11×) đạt 37,85% chỉ sau 4 epoch, nhanh hơn 3× mỗi epoch.
 
-**U-Net chưa xong — chẩn đoán:** với 92% pixel là nền, CE thường khiến U-Net sụp về nền
-(mIoU ~3,7%, pixel acc 73% = đúng tỉ lệ nền) ở cả lr 1e-3 và 3e-4 trong 2–3 epoch. Đã kiểm tra
-mask đúng (nhãn 0–20 + 255). Hướng xử lý để lại: trọng số lớp dạng `1/√freq` (chặn [0,2; 10])
-hoặc Dice + CE, chạy ≥30 epoch. Ghi ở `TODO.md`.
+**U-Net train từ đầu: 8,88% sau 35 epoch** (CE + Dice, lr 5e-4). Đây là kết quả thật, không phải
+lỗi cấu hình — hai bằng chứng:
+
+1. `A2/check_overfit.py` overfit 2 ảnh: mIoU **71,5%**, pixel accuracy 99,4% sau 80 bước → kiến
+   trúc và loss học được.
+2. VOC 2012 chỉ có 1.464 ảnh train; 35 epoch ≈ 6.400 bước, trong khi U-Net từ đầu trên VOC thường
+   cần hàng chục nghìn bước mới hội tụ.
+
+Bài học rút ra (đã ghi trong báo cáo): với ~1.500 ảnh, học từ pixel không thể cạnh tranh với đặc
+trưng pretrained — đúng luận điểm cần chứng minh ở A2.
 
 ## Cấu trúc
 

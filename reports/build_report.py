@@ -566,7 +566,7 @@ def section_a2() -> list:
                 f"Kết quả U-Net sau {unet['epochs']} epoch (CE + Dice, lr {unet['lr']:g}): mIoU "
                 f"{pct(unet['miou'])}, Dice {pct(unet['dice'])}, pixel accuracy {pct(unet['pixel_acc'])}. "
                 f"Con số này thấp hơn nhiều so với hai mô hình pretrained, nhưng nó đo đúng điều cần đo: "
-                f"với ~1.500 ảnh huấn luyện và 20 epoch, một CNN tự viết chưa thể cạnh tranh với đặc trưng "
+                f"với ~1.500 ảnh huấn luyện và {unet['epochs']} epoch, một CNN tự viết chưa thể cạnh tranh với đặc trưng "
                 f"đã học sẵn từ ImageNet/COCO."))
         story += fig(ROOT / "A2/results/curves_all.png", 15.0, "A2 — mIoU và Dice theo epoch.")
         samp = ROOT / f"A2/results/{best['tag']}/samples.png"

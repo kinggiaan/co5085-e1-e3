@@ -13,34 +13,50 @@
 
   <nav>
     <a href="index.html">Trang chung</a>
+    <a href="e1.pdf">E1</a>
+    <a href="e2.pdf">E2</a>
+    <a href="e3.pdf">E3</a>
     <a href="a1.html">A1</a>
     <a href="a2.html">A2</a>
-    <a href="exercises.pdf">Báo cáo E1–E3 (PDF)</a>
     <a href="https://github.com/kinggiaan/co5085-e1-e3">GitHub</a>
   </nav>
 
   <h2>Các bài tập</h2>
   <table>
-    <tr><th>Bài</th><th>Nội dung</th><th>Code</th><th>Báo cáo</th><th>Hạn</th></tr>
+    <tr><th>Bài</th><th>Nội dung</th><th>Code</th><th>Báo cáo (PDF)</th><th>Hạn</th></tr>
     <tr>
-      <td>E1–E3</td>
-      <td>Phân loại MNIST: softmax/MLP/CNN · MSA + tokenization · LSTM/GRU trên chuỗi ảnh</td>
-      <td><code>E1/</code> <code>E2/</code> <code>E3/</code></td>
-      <td><a href="exercises.pdf">exercises.pdf</a></td>
-      <td>02/11 &amp; 09/11/2026</td>
+      <td>E1</td>
+      <td>Phân loại MNIST: softmax / MLP / CNN</td>
+      <td><code>E1/</code></td>
+      <td><a href="e1.pdf">e1.pdf</a></td>
+      <td>02/11/2026</td>
+    </tr>
+    <tr>
+      <td>E2</td>
+      <td>MSA tự viết + 3 cách tokenize</td>
+      <td><code>E2/</code></td>
+      <td><a href="e2.pdf">e2.pdf</a></td>
+      <td>02/11/2026</td>
+    </tr>
+    <tr>
+      <td>E3</td>
+      <td>LSTM / GRU trên chuỗi ảnh + baseline</td>
+      <td><code>E3/</code></td>
+      <td><a href="e3.pdf">e3.pdf</a></td>
+      <td>09/11/2026</td>
     </tr>
     <tr>
       <td>A1</td>
-      <td>CNN vs Transformer trên tập ảnh lớn (Tiny-ImageNet): from-scratch vs pretrained, 3 kiểu freeze</td>
+      <td>CNN vs Transformer trên Tiny-ImageNet: from-scratch, 3 kiểu freeze</td>
       <td><code>A1/</code></td>
-      <td><a href="a1.html">trang A1</a></td>
+      <td><a href="a1.pdf">a1.pdf</a> · <a href="a1.html">trang A1</a></td>
       <td>A1.1 02/11 · A1.2 09/11</td>
     </tr>
     <tr>
       <td>A2</td>
-      <td>Semantic segmentation trên Pascal VOC 2012 + phân tích paper SegFormer</td>
+      <td>Semantic segmentation trên VOC 2012 + phân tích paper SegFormer</td>
       <td><code>A2/</code></td>
-      <td><a href="a2.html">trang A2</a></td>
+      <td><a href="a2.pdf">a2.pdf</a> · <a href="a2.html">trang A2</a></td>
       <td>A2.1 02/11 · A2.2 16/11</td>
     </tr>
   </table>
@@ -48,12 +64,13 @@
   <h2>Trạng thái</h2>
   <table>
     <tr><th>Mốc</th><th>Trạng thái</th><th>Ghi chú</th></tr>
-    <tr><td>E1 + E2</td><td><span class="tag done">xong nội dung</span></td><td>số liệu + báo cáo đã có; còn điền tên nhóm &amp; khai báo AI</td></tr>
-    <tr><td>E3</td><td><span class="tag done">xong nội dung</span></td><td>hạn 09/11</td></tr>
-    <tr><td>A1.1</td><td><span class="tag done">protocol đã chốt</span></td><td>Tiny-ImageNet, ResNet-18 vs ViT-B/16 — xem <a href="a1.html">trang A1</a></td></tr>
-    <tr><td>A1.2</td><td><span class="tag warn">đang chạy</span></td><td>hạn 09/11</td></tr>
-    <tr><td>A2.1</td><td><span class="tag done">chủ đề + paper đã chốt</span></td><td>VOC 2012 + SegFormer — xem <a href="a2.html">trang A2</a></td></tr>
-    <tr><td>A2.2</td><td><span class="tag warn">đang làm</span></td><td>hạn 16/11</td></tr>
+    <tr><td>E1</td><td><span class="tag done">xong</span></td><td>92,62% · 97,68% · 99,10%</td></tr>
+    <tr><td>E2</td><td><span class="tag done">xong</span></td><td>MSA khớp PyTorch 1,0e-07</td></tr>
+    <tr><td>E3</td><td><span class="tag done">xong</span></td><td>rows/gru 98,25%; đảo hàng → 11,22%</td></tr>
+    <tr><td>A1.1</td><td><span class="tag done">xong</span></td><td>Tiny-ImageNet, ResNet-18 vs Swin-T — <a href="a1.html">trang A1</a></td></tr>
+    <tr><td>A1.2</td><td><span class="tag done">xong</span></td><td>6 cấu hình, Swin-T finetune 80,17%</td></tr>
+    <tr><td>A2.1</td><td><span class="tag done">xong</span></td><td>VOC 2012 + SegFormer — <a href="a2.html">trang A2</a></td></tr>
+    <tr><td>A2.2</td><td><span class="tag done">xong</span></td><td>DeepLabV3 67,11% mIoU + video demo</td></tr>
   </table>
 
   <h2>Tái lập</h2>

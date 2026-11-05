@@ -1,6 +1,6 @@
 # Việc còn lại
 
-Cập nhật 04/11. **E1–E3 xong. A1 xong 6 cấu hình. A2 xong 3 biến thể.**
+Cập nhật 05/11. **E1–E3 xong. A1 xong 6 cấu hình. A2 xong 3 biến thể.**
 
 ## Trạng thái từng mốc
 
@@ -18,7 +18,7 @@ Cập nhật 04/11. **E1–E3 xong. A1 xong 6 cấu hình. A2 xong 3 biến th�
 - [ ] Nếu muốn U-Net đẹp hơn: chạy ≥100 epoch
       (`python -m A2.train --arch unet --epochs 100 --lr 5e-4 --img-size 256`) — hiện 8,88% sau 35
       epoch, kiến trúc đã được kiểm chứng đúng bằng `A2/check_overfit.py`.
-- [ ] Đọc lại toàn bộ `reports/exercises.pdf` (17 trang) một lượt trước khi nộp.
+- [ ] Đọc lại 5 báo cáo riêng (`reports/e1.pdf`, `e2.pdf`, `e3.pdf`, `a1.pdf`, `a2.pdf`) trước khi nộp.
 - [ ] Kiểm tra trang Pages sau khi push: https://kinggiaan.github.io/co5085-e1-e3/
 
 ## Ghi chú kỹ thuật

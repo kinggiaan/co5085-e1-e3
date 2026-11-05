@@ -59,7 +59,17 @@ Mọi kết quả ghi vào `E*/results/<run>/` gồm `metrics.json`, `history.cs
 ## Kết quả
 
 Sinh bằng các lệnh `run_all.py` ở trên; xem `E1/results/summary.md`, `E2/results/summary.md`,
-`E3/results/summary.md`. Báo cáo đầy đủ: `reports/exercises.pdf`.
+`E3/results/summary.md`.
+
+**Báo cáo PDF — mỗi bài một file riêng** (chạy `python reports/build_report.py` để sinh lại):
+
+| Bài | File | Trang |
+|---|---|---:|
+| E1 | [`reports/e1.pdf`](reports/e1.pdf) | 6 |
+| E2 | [`reports/e2.pdf`](reports/e2.pdf) | 6 |
+| E3 | [`reports/e3.pdf`](reports/e3.pdf) | 5 |
+| A1 | [`reports/a1.pdf`](reports/a1.pdf) | 5 |
+| A2 | [`reports/a2.pdf`](reports/a2.pdf) | 5 |
 
 **E1 — softmax / MLP / CNN** (8/8/5 epoch, batch 128, seed 42):
 
@@ -108,11 +118,11 @@ mô hình thực sự dùng thông tin thứ tự.
 Pretrain đáng giá **+30 điểm** với CNN; đóng băng backbone vẫn đạt 53% chỉ với 0,9% số tham số
 trainable. ViT-B/16 không vừa 4 GB VRAM ở 224 px (đo được 5.048 MB) nên Transformer dùng Swin-T.
 
-**A2 — segmentation trên VOC 2012**: U-Net tự viết vs DeepLabV3-ResNet50 (pretrained) vs
-SegFormer-B0 (Transformer, đúng paper đang phân tích). Xem `A2/results/summary.md`.
+**A2 — segmentation trên VOC 2012**: U-Net tự viết (8,88% mIoU) vs DeepLabV3-ResNet50 pretrained
+(67,11%) vs SegFormer-B0 (37,85%, đúng paper đang phân tích). Xem `A2/results/summary.md`.
 
-Báo cáo đầy đủ (**15 trang**, có bảng và hình): [`reports/exercises.pdf`](reports/exercises.pdf),
-sinh lại bằng `python reports/build_report.py`.
+Báo cáo: 5 file PDF riêng (bảng ở mục **Kết quả** phía trên), sinh lại bằng
+`python reports/build_report.py`.
 
 ## Ghi chú
 

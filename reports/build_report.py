@@ -12,7 +12,9 @@ Ghi: reports/exercises.pdf
 """
 from __future__ import annotations
 
+import functools
 import json
+import os
 import sys
 from datetime import date
 from pathlib import Path
@@ -40,6 +42,9 @@ from reportlab.platypus import (
 from reportlab.platypus.tableofcontents import TableOfContents
 
 ROOT = Path(__file__).resolve().parents[1]
+
+# Ngay hoan thanh in tren bia. Chot bang REPORT_DATE de build lai van ra dung ngay.
+REPORT_DATE_LABEL = os.environ.get("REPORT_DATE") or date.today().strftime("%d/%m/%Y")
 OUT = ROOT / "reports" / "exercises.pdf"
 
 # ---------------------------------------------------------------- font
@@ -146,10 +151,11 @@ def pct(x: float) -> str:
 
 # ---------------------------------------------------------------- document
 class Report(BaseDocTemplate):
-    def __init__(self, filename, **kw):
+    def __init__(self, filename, doc_title: str = "Báo cáo CO5085", header_right: str = "", **kw):
         super().__init__(filename, pagesize=A4, leftMargin=2.0 * cm, rightMargin=2.0 * cm,
                          topMargin=2.2 * cm, bottomMargin=1.8 * cm,
-                         title="CO5085 — Báo cáo bài tập E1–E3", author="Dương Gia An — 2470293", **kw)
+                         title=doc_title, author="Dương Gia An — 2470293", **kw)
+        self.header_right = header_right
         frame = Frame(self.leftMargin, self.bottomMargin, self.width, self.height, id="normal")
         self.addPageTemplates([PageTemplate(id="main", frames=[frame], onPage=self._decorate)])
 
@@ -158,7 +164,7 @@ class Report(BaseDocTemplate):
         canvas.setFont("Arial", 7.5)
         canvas.setFillColor(GREY)
         canvas.drawString(2.0 * cm, A4[1] - 1.3 * cm, "CO5085 — Học sâu và ứng dụng trong thị giác máy tính")
-        canvas.drawRightString(A4[0] - 2.0 * cm, A4[1] - 1.3 * cm, "Coursework E1–E3 · A1–A2")
+        canvas.drawRightString(A4[0] - 2.0 * cm, A4[1] - 1.3 * cm, self.header_right)
         canvas.setStrokeColor(colors.HexColor("#dddddd"))
         canvas.line(2.0 * cm, A4[1] - 1.45 * cm, A4[0] - 2.0 * cm, A4[1] - 1.45 * cm)
         canvas.line(2.0 * cm, 1.45 * cm, A4[0] - 2.0 * cm, 1.45 * cm)
@@ -173,13 +179,13 @@ class Report(BaseDocTemplate):
                 self.notify("TOCEntry", (level, flowable.getPlainText(), self.page))
 
 
-def cover() -> list:
+def cover(title: str, dataset: str) -> list:
     story = [Spacer(1, 2.2 * cm),
              Paragraph("ĐẠI HỌC QUỐC GIA TP. HỒ CHÍ MINH", SUB),
              Paragraph("TRƯỜNG ĐẠI HỌC BÁCH KHOA", SUB),
              Paragraph("KHOA KHOA HỌC VÀ KỸ THUẬT MÁY TÍNH", SUB),
              Spacer(1, 2.0 * cm),
-             Paragraph("BÁO CÁO COURSEWORK — E1–E3 &amp; A1–A2", TITLE),
+             Paragraph(title, TITLE),
              Spacer(1, 0.3 * cm),
              Paragraph("Học sâu và ứng dụng trong thị giác máy tính — CO5085", SUB),
              Spacer(1, 1.6 * cm)]
@@ -188,8 +194,8 @@ def cover() -> list:
         ["Giảng viên", "Lê Thành Sách, Nguyễn Quốc Minh"],
         ["Sinh viên", "Dương Gia An — MSSV 2470293"],
         ["Hình thức", "Cá nhân"],
-        ["Dữ liệu", "MNIST (E1–E3), Tiny-ImageNet (A1), Pascal VOC 2012 (A2)"],
-        ["Ngày hoàn thành", date.today().strftime("%d/%m/%Y")],
+        ["Dữ liệu", dataset],
+        ["Ngày hoàn thành", REPORT_DATE_LABEL],
     ]
     t = Table([[Paragraph(a, CELL_LEFT), Paragraph(b, CELL_LEFT)] for a, b in rows],
               colWidths=[4.2 * cm, 9.5 * cm], hAlign="CENTER")
@@ -202,8 +208,8 @@ def cover() -> list:
     return story
 
 
-def section_intro() -> list:
-    story = [Paragraph("1. Giới thiệu và thiết lập chung", H1)]
+def section_intro(num: int) -> list:
+    story = [Paragraph(f"{num}. Giới thiệu và thiết lập chung", H1)]
     story.append(p(
         "Báo cáo trình bày ba bài tập E1–E3 trên cùng một tập dữ liệu nhỏ là MNIST: 60.000 ảnh huấn luyện "
         "(chia 50.000 train / 10.000 validation theo seed 42) và 10.000 ảnh test chính thức. Việc dùng chung "
@@ -228,9 +234,9 @@ def section_intro() -> list:
     return story
 
 
-def section_e1() -> list:
-    story = [Paragraph("2. E1 — Phân loại ảnh: softmax, MLP, CNN", H1)]
-    story.append(Paragraph("2.1. Kiến trúc", H2))
+def section_e1(num: int) -> list:
+    story = [Paragraph(f"{num}. E1 — Phân loại ảnh: softmax, MLP, CNN", H1)]
+    story.append(Paragraph(f"{num}.1. Kiến trúc", H2))
     story.append(p(
         "Ba mô hình tăng dần về khả năng biểu diễn. <b>Softmax</b> chỉ có một phép biến đổi tuyến tính trên vector "
         "ảnh đã flatten, tương đương việc học 10 “template” và chọn template khớp nhất — vì vậy nó bị chặn trên "
@@ -247,7 +253,7 @@ def section_e1() -> list:
         col_widths=[2.6 * cm, 10.4 * cm, 3.0 * cm],
     )
 
-    story.append(Paragraph("2.2. Kết quả", H2))
+    story.append(Paragraph(f"{num}.2. Kết quả", H2))
     if E1:
         rows = [["Mô hình", "Tham số", "Val acc", "Test acc", "Test loss", "Thời gian"]]
         for r in E1:
@@ -267,7 +273,7 @@ def section_e1() -> list:
         story += fig(ROOT / "E1/results/acc_vs_params.png", 11.0,
                      "Test accuracy theo số tham số (thang log).")
 
-        story.append(Paragraph("2.3. Phân tích lỗi", H2))
+        story.append(Paragraph(f"{num}.3. Phân tích lỗi", H2))
         story.append(p(
             "Confusion matrix cho thấy lỗi của softmax tập trung ở các cặp chữ số có nét tương đồng khi nhìn như "
             "một chồng pixel (3–5, 4–9, 7–9). CNN giảm mạnh các nhầm lẫn này vì nó học được đặc trưng cục bộ "
@@ -283,9 +289,9 @@ def section_e1() -> list:
     return story
 
 
-def section_e2() -> list:
-    story = [Paragraph("3. E2 — Transformer: MSA và tokenization", H1)]
-    story.append(Paragraph("3.1. Multi-Head Self-Attention", H2))
+def section_e2(num: int) -> list:
+    story = [Paragraph(f"{num}. E2 — Transformer: MSA và tokenization", H1)]
+    story.append(Paragraph(f"{num}.1. Multi-Head Self-Attention", H2))
     story.append(p(
         "MSA được viết lại từ các phép toán cơ bản (Linear, einsum, softmax, ghép head), không dùng "
         "<i>nn.MultiheadAttention</i>. Với đầu vào X ∈ R<sup>B×N×d</sup>: chiếu ra Q, K, V; tính điểm tương đồng "
@@ -311,7 +317,7 @@ def section_e2() -> list:
             f"<b>{E2_EQ['worst_abs_diff']:.1e}</b> — sai số số học thuần tuý của phép cộng dấu phẩy động. "
             "Kết quả này cả khi bật mask, nên có thể khẳng định bản tự viết là đúng đặc tả."))
 
-    story.append(Paragraph("3.2. Các cách lấy token", H2))
+    story.append(Paragraph(f"{num}.2. Các cách lấy token", H2))
     story.append(p(
         "Ảnh 28×28 không có token tự nhiên như câu chữ, nên cách chia token là một lựa chọn thiết kế có ảnh hưởng "
         "trực tiếp: càng nhiều token thì chi phí attention O(N²d) càng lớn, nhưng mỗi token chứa ít thông tin hơn. "
@@ -319,7 +325,7 @@ def section_e2() -> list:
         "token (28 token, 28 chiều), và dùng CNN stem rút feature map 7×7 (49 token, 64 chiều). Mỗi chuỗi được "
         "bọc thêm một token CLS và một positional embedding học được, vì bản thân attention không có khái niệm thứ tự."))
 
-    story.append(Paragraph("3.3. Kết quả", H2))
+    story.append(Paragraph(f"{num}.3. Kết quả", H2))
     if E2:
         rows = [["Tokenize", "MSA", "Số token", "Tham số", "Test acc", "s/epoch"]]
         for r in E2:
@@ -377,9 +383,9 @@ def section_e2() -> list:
     return story
 
 
-def section_e3() -> list:
-    story = [Paragraph("4. E3 — LSTM/GRU trên chuỗi ảnh", H1)]
-    story.append(Paragraph("4.1. Ý tưởng và cách biểu diễn chuỗi", H2))
+def section_e3(num: int) -> list:
+    story = [Paragraph(f"{num}. E3 — LSTM/GRU trên chuỗi ảnh", H1)]
+    story.append(Paragraph(f"{num}.1. Ý tưởng và cách biểu diễn chuỗi", H2))
     story.append(p(
         "Ảnh không phải chuỗi tự nhiên, nên E3 là bài toán <i>chọn cách nhìn</i>: biến ảnh thành dãy token sao cho "
         "thứ tự mang thông tin. Ba cách được thử: mỗi hàng ảnh là một bước thời gian (T=28, F=28), mỗi cột là một "
@@ -391,7 +397,7 @@ def section_e3() -> list:
         "gradient có “đường cao tốc” đi ngược thời gian thay vì bị nhân liên tiếp với ma trận trọng số như RNN thuần. "
         "GRU gộp hai cổng còn một, ít tham số hơn khoảng 25% và thường tương đương trên chuỗi ngắn như MNIST."))
 
-    story.append(Paragraph("4.2. Kết quả và so sánh với baseline", H2))
+    story.append(Paragraph(f"{num}.2. Kết quả và so sánh với baseline", H2))
     if E3:
         rows = [["Biểu diễn", "Cell", "Tham số", "Test acc", "s/epoch"]]
         for r in E3:
@@ -425,9 +431,9 @@ def section_e3() -> list:
     return story
 
 
-def section_a1() -> list:
-    story = [Paragraph("5. A1 — CNN vs Transformer trên tập ảnh lớn (Tiny-ImageNet)", H1)]
-    story.append(Paragraph("5.1. Dữ liệu và vì sao chọn Tiny-ImageNet", H2))
+def section_a1(num: int) -> list:
+    story = [Paragraph(f"{num}. A1 — CNN vs Transformer trên tập ảnh lớn (Tiny-ImageNet)", H1)]
+    story.append(Paragraph(f"{num}.1. Dữ liệu và vì sao chọn Tiny-ImageNet", H2))
     story.append(p(
         "A1 yêu cầu một tập ảnh lớn hơn E1 để câu hỏi CNN vs Transformer và pretrain/freeze có ý nghĩa. "
         "Bài làm chọn <b>Tiny-ImageNet</b>: 200 lớp, ảnh 64×64, 100.000 ảnh train và 10.000 val có nhãn. "
@@ -443,7 +449,7 @@ def section_a1() -> list:
         col_widths=[5.0 * cm, 4.0 * cm, 4.0 * cm, 3.6 * cm],
     )
 
-    story.append(Paragraph("5.2. Kiến trúc: vì sao Transformer là Swin-T chứ không phải ViT-B/16", H2))
+    story.append(Paragraph(f"{num}.2. Kiến trúc: vì sao Transformer là Swin-T chứ không phải ViT-B/16", H2))
     story.append(p(
         "Đo trực tiếp trên GTX 1650 4 GB: ViT-B/16 ở 224 px cần <b>5.048 MB</b> bộ nhớ, vượt 4 GB "
         "nên tràn sang shared memory và chậm bất thường — <b>31 s/bước</b> so với 0,3 s của ResNet-18. "
@@ -451,7 +457,7 @@ def section_a1() -> list:
         "(Swin cũng nằm trong danh sách đề gợi ý). Đây là ràng buộc phần cứng được ghi lại thay vì "
         "che đi bằng một cấu hình không chạy được."))
 
-    story.append(Paragraph("5.3. Kết quả", H2))
+    story.append(Paragraph(f"{num}.3. Kết quả", H2))
     if A1:
         rows = [["Kiến trúc", "Chế độ", "Epoch", "Tham số trainable", "Val acc", "Macro-F1", "s/epoch"]]
         for r in A1:
@@ -496,9 +502,9 @@ def section_a1() -> list:
     return story
 
 
-def section_a2() -> list:
-    story = [Paragraph("6. A2 — Phân đoạn ngữ nghĩa trên Pascal VOC 2012 và phân tích SegFormer", H1)]
-    story.append(Paragraph("6.1. Bài toán và dữ liệu", H2))
+def section_a2(num: int) -> list:
+    story = [Paragraph(f"{num}. A2 — Phân đoạn ngữ nghĩa trên Pascal VOC 2012 và phân tích SegFormer", H1)]
+    story.append(Paragraph(f"{num}.1. Bài toán và dữ liệu", H2))
     story.append(p(
         "A2 yêu cầu một bài toán thị giác không phải phân loại ảnh thuần. Bài làm chọn <b>phân đoạn ngữ nghĩa "
         "21 lớp trên Pascal VOC 2012</b> (1.464 ảnh train / 1.449 val), metric <b>mIoU</b> và Dice — "
@@ -506,7 +512,7 @@ def section_a2() -> list:
         "CNN-vs-Transformer sang một miền mới. Máy chủ gốc của VOC không truy cập được từ mạng của máy này, "
         "nên dữ liệu được lấy qua mirror HuggingFace."))
 
-    story.append(Paragraph("6.2. Phân tích paper: SegFormer (NeurIPS 2021)", H2))
+    story.append(Paragraph(f"{num}.2. Phân tích paper: SegFormer (NeurIPS 2021)", H2))
     story.append(p(
         "Xie và cộng sự, <i>SegFormer: Simple and Efficient Design for Semantic Segmentation with "
         "Transformers</i>, NeurIPS 2021 (arXiv:2105.15203). Ba ý tưởng chính:"))
@@ -522,7 +528,7 @@ def section_a2() -> list:
         "ImageNet-1k, chưa khảo sát vùng dữ liệu ít như VOC 2012 (~1,5k ảnh) — nơi mà lợi thế của kiến trúc "
         "Transformer có thể bị pretrain chi phối hoàn toàn."))
 
-    story.append(Paragraph("6.3. Pipeline và kết quả", H2))
+    story.append(Paragraph(f"{num}.3. Pipeline và kết quả", H2))
     story.append(p(
         "Ba biến thể được cài đặt để tách hai yếu tố thường bị trộn lẫn — <b>kiến trúc</b> (CNN vs Transformer) "
         "và <b>pretrain</b> (có vs không): U-Net tự viết (1,9M tham số, train từ đầu), DeepLabV3-ResNet50 "
@@ -572,8 +578,8 @@ def section_a2() -> list:
     return story
 
 
-def section_conclusion() -> list:
-    story = [Paragraph("7. Kết luận", H1)]
+def section_conclusion(num: int) -> list:
+    story = [Paragraph(f"{num}. Kết luận", H1)]
     items = [
         "<b>Kiến trúc phù hợp quan trọng hơn số tham số.</b> CNN 468 nghìn tham số đạt "
         f"{pct(E1[2]['test_acc']) if len(E1) > 2 else '—'} trong khi MLP 235 nghìn tham số chỉ đạt "
@@ -590,19 +596,14 @@ def section_conclusion() -> list:
     return story
 
 
-def section_appendix() -> list:
-    story = [Paragraph("8. Phụ lục: tái lập", H1)]
-    story.append(p("Toàn bộ kết quả sinh lại được bằng các lệnh sau, mỗi lệnh ghi kết quả vào "
-                   "<i>*/results/</i>:"))
-    story.append(Paragraph(
-        "<font face='Courier'>python scripts/prepare_tiny_imagenet.py<br/>"
-        "python scripts/prepare_voc2012.py<br/>"
-        "python E1/run_all.py<br/>python E2/run_all.py<br/>python E3/run_all.py<br/>"
-        "python A1/run_all.py<br/>python A2/run_all.py<br/>"
-        "python reports/build_report.py</font>", BODY))
+def section_appendix(num: int, commands: list[str]) -> list:
+    story = [Paragraph(f"{num}. Phụ lục: tái lập", H1)]
+    story.append(p("Kết quả trong báo cáo sinh lại được bằng các lệnh sau, mỗi lệnh ghi kết quả "
+                   "vào thư mục <i>results/</i> tương ứng:"))
+    story.append(Paragraph("<font face='Courier'>" + "<br/>".join(commands) + "</font>", BODY))
     story.append(p(
         "Mỗi lần chạy lưu <i>metrics.json</i> (cấu hình, số tham số, accuracy, thời gian), "
-        "<i>history.csv</i> (loss/accuracy từng epoch) và các hình PNG. Seed cố định 42 cho cả ba bài."))
+        "<i>history.csv</i> (loss/accuracy từng epoch) và các hình PNG. Seed cố định 42."))
     story.append(Paragraph("Khai báo sử dụng công cụ AI", H2))
     story.append(p(
         "Theo mục 1.6 của đề, tôi khai báo phạm vi đã sử dụng công cụ AI hỗ trợ trong bài tập này: "
@@ -616,42 +617,89 @@ def section_appendix() -> list:
     return story
 
 
-def main() -> None:
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    doc = Report(str(OUT))
+def build_document(out: Path, title: str, header: str, dataset: str, sections: list,
+                   commands: list[str]) -> None:
+    """Dựng một PDF riêng: bìa + mục lục + các section được truyền vào + phụ lục."""
+    out.parent.mkdir(parents=True, exist_ok=True)
+    doc = Report(str(out), doc_title=title, header_right=header)
     toc = TableOfContents()
     toc.levelStyles = [
         ParagraphStyle("toc0", fontName="Arial-Bold", fontSize=10.5, leading=16, spaceBefore=4),
         ParagraphStyle("toc1", fontName="Arial", fontSize=9.5, leading=13, leftIndent=14, textColor=GREY),
     ]
 
-    story = cover()
+    story = cover(title, dataset)
     story.append(PageBreak())
     story.append(Paragraph("Mục lục", TOCTITLE))
     story.append(toc)
     story.append(PageBreak())
-    story += section_intro()
-    story += section_e1()
-    story.append(PageBreak())
-    story += section_e2()
-    story.append(PageBreak())
-    story += section_e3()
-    story.append(PageBreak())
-    story += section_a1()
-    story.append(PageBreak())
-    story += section_a2()
-    story += section_conclusion()
-    story += section_appendix()
+
+    num = 1
+    for build_section in sections:
+        story += build_section(num)
+        num += 1
+    story += section_appendix(num, commands)
 
     doc.multiBuild(story)
-    size = OUT.stat().st_size / 1024
-    print(f"Đã ghi {OUT} ({size:.0f} KB, {doc.page} trang)")
+    size = out.stat().st_size / 1024
+    print(f"  {out.name}: {doc.page} trang, {size:.0f} KB")
 
-    # GitHub Pages chỉ phục vụ thư mục /docs -> chép thêm một bản để link tải trực tiếp được
-    pages_copy = ROOT / "docs" / "exercises.pdf"
+    # GitHub Pages chỉ phục vụ thư mục /docs
+    pages_copy = ROOT / "docs" / out.name
     pages_copy.parent.mkdir(parents=True, exist_ok=True)
-    pages_copy.write_bytes(OUT.read_bytes())
-    print(f"Đã cập nhật bản cho GitHub Pages: {pages_copy}")
+    pages_copy.write_bytes(out.read_bytes())
+
+
+DOCS = [
+    (
+        "e1.pdf",
+        "BÁO CÁO BÀI TẬP E1",
+        "E1 — softmax / MLP / CNN",
+        "MNIST (28×28, 10 lớp)",
+        [functools.partial(section_intro), functools.partial(section_e1), functools.partial(section_conclusion)],
+        ["python E1/run_all.py", "python reports/build_report.py"],
+    ),
+    (
+        "e2.pdf",
+        "BÁO CÁO BÀI TẬP E2",
+        "E2 — MSA và tokenization",
+        "MNIST (28×28, 10 lớp)",
+        [functools.partial(section_intro), functools.partial(section_e2)],
+        ["python E2/run_all.py", "python E2/test_msa.py", "python reports/build_report.py"],
+    ),
+    (
+        "e3.pdf",
+        "BÁO CÁO BÀI TẬP E3",
+        "E3 — LSTM / GRU",
+        "MNIST (28×28, 10 lớp)",
+        [functools.partial(section_intro), functools.partial(section_e3)],
+        ["python E3/run_all.py", "python reports/build_report.py"],
+    ),
+    (
+        "a1.pdf",
+        "BÁO CÁO BÀI TẬP LỚN A1",
+        "A1 — CNN vs Transformer",
+        "Tiny-ImageNet (200 lớp, 64×64)",
+        [functools.partial(section_a1)],
+        ["python scripts/prepare_tiny_imagenet.py", "python A1/run_all.py",
+         "python reports/build_report.py"],
+    ),
+    (
+        "a2.pdf",
+        "BÁO CÁO BÀI TẬP LỚN A2",
+        "A2 — Segmentation trên VOC 2012",
+        "Pascal VOC 2012 (21 lớp)",
+        [functools.partial(section_a2)],
+        ["python scripts/prepare_voc2012.py", "python A2/run_all.py", "python A2/make_demo.py",
+         "python reports/build_report.py"],
+    ),
+]
+
+
+def main() -> None:
+    print("Dựng báo cáo riêng cho từng bài:")
+    for name, title, header, dataset, sections, commands in DOCS:
+        build_document(ROOT / "reports" / name, title, header, dataset, sections, commands)
 
 
 if __name__ == "__main__":

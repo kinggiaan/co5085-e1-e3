@@ -187,7 +187,7 @@ def cover() -> list:
         ["Học kỳ", "HK261 (2026–2027)"],
         ["Giảng viên", "Lê Thành Sách, Nguyễn Quốc Minh"],
         ["Sinh viên", "Dương Gia An — MSSV 2470293"],
-        ["Hình thức", "Cá nhân (đề cho phép làm một mình)"],
+        ["Hình thức", "Cá nhân"],
         ["Dữ liệu", "MNIST (E1–E3), Tiny-ImageNet (A1), Pascal VOC 2012 (A2)"],
         ["Ngày hoàn thành", date.today().strftime("%d/%m/%Y")],
     ]
@@ -198,10 +198,7 @@ def cover() -> list:
                            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
                            ("TOPPADDING", (0, 0), (-1, -1), 4),
                            ("BOTTOMPADDING", (0, 0), (-1, -1), 4)]))
-    story += [t, Spacer(1, 2.0 * cm),
-              Paragraph("Toàn bộ số liệu trong báo cáo sinh ra từ các script trong repo "
-                        "(<i>E1/run_all.py</i>, <i>E2/run_all.py</i>, <i>E3/run_all.py</i>); "
-                        "seed, cấu hình và log được lưu cùng kết quả.", CAPTION)]
+    story += [t, Spacer(1, 2.0 * cm)]
     return story
 
 
@@ -435,7 +432,7 @@ def section_a1() -> list:
         "A1 yêu cầu một tập ảnh lớn hơn E1 để câu hỏi CNN vs Transformer và pretrain/freeze có ý nghĩa. "
         "Bài làm chọn <b>Tiny-ImageNet</b>: 200 lớp, ảnh 64×64, 100.000 ảnh train và 10.000 val có nhãn. "
         "Điểm quyết định là độ phân giải: CIFAR-100 (32×32) phải phóng 7× lên 224 cho mô hình pretrained, "
-        "làm lợi thế của pretrain bị bóp méo — đúng thứ A1 cần đo. Food-101 thì quá nặng cho 4 GB VRAM."))
+        "làm lợi thế của pretrain bị bóp méo. Food-101 thì quá nặng cho 4 GB VRAM."))
     story += table(
         [["Tiêu chí", "Tiny-ImageNet", "CIFAR-100", "Food-101"],
          ["Độ phân giải", "64×64", "32×32", "512 px"],
@@ -475,19 +472,18 @@ def section_a1() -> list:
                f"đặc trưng đóng băng tốt cho bài toán gần miền ImageNet, nhưng 200 lớp ảnh 64×64 vẫn cần "
                f"tinh chỉnh." if freeze else "")))
         story.append(p(
-            "Một giới hạn được ghi nhận trung thực: cấu hình Swin-T from-scratch tốn 1.663 s/epoch "
-            "(27,7 phút), tức ~9 giờ cho 20 epoch — vượt ngân sách compute, nên chỉ chạy "
-            "Transformer ở dạng pretrained. Đề mục 4.2 chỉ bắt buộc from-scratch cho <i>ít nhất một họ</i>, "
-            "và ResNet-18 đảm nhiệm vai trò đó."))
+            "Cấu hình Swin-T from-scratch tốn 1.663 s/epoch (27,7 phút), tức ~9 giờ cho 20 epoch — vượt "
+            "ngân sách compute, nên Transformer chỉ được chạy ở dạng pretrained; ResNet-18 đảm nhiệm phần "
+            "from-scratch."))
         fa = next((r for r in A1 if r["arch"] == "resnet18" and r["mode"] == "freeze_all"), None)
         fp = next((r for r in A1 if r["arch"] == "resnet18" and r["mode"] == "freeze_partial"), None)
         if fa and fp and ft:
             story.append(p(
-                f"Trên ResNet-18, ba kiểu đóng băng cho một dãy đơn điệu đúng như kỳ vọng: đóng băng toàn bộ "
-                f"backbone {pct(fa['test_acc'])} (chỉ {fa['num_params_trainable']:,} tham số trainable) → "
-                f"đóng băng một phần {pct(fp['test_acc'])} ({fp['num_params_trainable']:,}) → finetune toàn bộ "
-                f"{pct(ft['test_acc'])}. Nói cách khác, mở thêm càng nhiều tầng cho học thì kết quả càng tốt, "
-                f"nhưng 53% chỉ với 0,9% tham số là mức đánh đổi rất đáng cân nhắc khi compute hạn chế."))
+                f"Trên ResNet-18, ba kiểu đóng băng cho một dãy tăng dần: đóng băng toàn bộ backbone "
+                f"{pct(fa['test_acc'])} (chỉ {fa['num_params_trainable']:,} tham số trainable) → đóng băng "
+                f"một phần {pct(fp['test_acc'])} ({fp['num_params_trainable']:,}) → finetune toàn bộ "
+                f"{pct(ft['test_acc'])}. Điểm đáng chú ý là 53% chỉ với 0,9% tham số — mức đánh đổi hợp lý "
+                f"khi compute hạn chế."))
         story += fig(ROOT / "A1/results/val_acc_bar.png", 15.0,
                      "A1 — val accuracy theo kiến trúc và chế độ huấn luyện.")
         story += fig(ROOT / "A1/results/val_acc_all.png", 14.0,
@@ -506,9 +502,9 @@ def section_a2() -> list:
     story.append(p(
         "A2 yêu cầu một bài toán thị giác không phải phân loại ảnh thuần. Bài làm chọn <b>phân đoạn ngữ nghĩa "
         "21 lớp trên Pascal VOC 2012</b> (1.464 ảnh train / 1.449 val), metric <b>mIoU</b> và Dice — "
-        "đây là bài toán dự đoán dày, khác bản chất với phân loại ở A1, và nối tiếp đúng mạch "
+        "đây là bài toán dự đoán dày, khác bản chất với phân loại ở A1, và nối tiếp mạch "
         "CNN-vs-Transformer sang một miền mới. Máy chủ gốc của VOC không truy cập được từ mạng của máy này, "
-        "nên dữ liệu được lấy qua mirror HuggingFace rồi dựng lại đúng cấu trúc VOC."))
+        "nên dữ liệu được lấy qua mirror HuggingFace."))
 
     story.append(Paragraph("6.2. Phân tích paper: SegFormer (NeurIPS 2021)", H2))
     story.append(p(
@@ -524,7 +520,7 @@ def section_a2() -> list:
         "Thí nghiệm trong paper: SegFormer-B4 đạt 50,3% mIoU trên ADE20K với 64M tham số; B5 đạt 84,0% mIoU "
         "trên Cityscapes val. <b>Hạn chế</b> được khai thác trong báo cáo: paper đánh giá trên tập lớn có pretrain "
         "ImageNet-1k, chưa khảo sát vùng dữ liệu ít như VOC 2012 (~1,5k ảnh) — nơi mà lợi thế của kiến trúc "
-        "Transformer có thể bị pretrain chi phối hoàn toàn. Đây chính là câu hỏi đặt ra cho pipeline của bài làm."))
+        "Transformer có thể bị pretrain chi phối hoàn toàn."))
 
     story.append(Paragraph("6.3. Pipeline và kết quả", H2))
     story.append(p(
@@ -558,8 +554,7 @@ def section_a2() -> list:
             "lớp nghịch tần suất (không ổn định) và loss CE + Dice (giữ được, dùng cho kết quả dưới đây). "
             "Để chắc chắn lỗi không nằm ở kiến trúc, một phép kiểm tra overfit 2 ảnh được chạy "
             "(<i>A2/check_overfit.py</i>): sau 80 bước, mIoU trên chính 2 ảnh đó đạt 71,5% và pixel accuracy "
-            "99,4% — tức kiến trúc và loss học được, giới hạn nằm ở số epoch so với ngân sách GPU. "
-            "Đây là lý do U-Net chỉ dừng ở mức thấp trong bảng, và việc tăng epoch được ghi ở <i>TODO.md</i>."))
+            "99,4% — tức kiến trúc và loss học được, giới hạn nằm ở số epoch so với ngân sách GPU."))
         unet = next((r for r in A2 if r["arch"] == "unet"), None)
         if unet:
             story.append(p(
@@ -589,8 +584,7 @@ def section_conclusion() -> list:
         "hàng chục điểm phần trăm: tokenizer nào làm sẵn nhiều việc trích đặc trưng hơn thì kết quả tốt hơn. Số token "
         "đồng thời quyết định chi phí O(N²d).",
         "<b>Mô hình hồi quy không thắng trên dữ liệu không có phụ thuộc dài.</b> LSTM/GRU học được thứ tự (thí nghiệm "
-        "đảo hàng chứng minh điều đó) nhưng vẫn kém CNN trên MNIST — chọn đúng công cụ cho đúng cấu trúc dữ liệu "
-        "quan trọng hơn việc dùng mô hình “hiện đại” hơn.",
+        "đảo hàng chứng minh điều đó) nhưng vẫn kém CNN trên MNIST: 98,25% so với 99,10%.",
     ]
     story += bullets(items)
     return story
@@ -607,9 +601,8 @@ def section_appendix() -> list:
         "python A1/run_all.py<br/>python A2/run_all.py<br/>"
         "python reports/build_report.py</font>", BODY))
     story.append(p(
-        "Mỗi lần chạy lưu <i>metrics.json</i> (cấu hình, số tham số, accuracy, thời gian, confusion matrix), "
-        "<i>history.csv</i> (loss/accuracy từng epoch) và các hình PNG. Seed cố định 42 cho cả ba bài; "
-        "split dữ liệu được tạo bằng generator có seed nên danh sách ảnh trong train/val không đổi giữa các lần chạy."))
+        "Mỗi lần chạy lưu <i>metrics.json</i> (cấu hình, số tham số, accuracy, thời gian), "
+        "<i>history.csv</i> (loss/accuracy từng epoch) và các hình PNG. Seed cố định 42 cho cả ba bài."))
     story.append(Paragraph("Khai báo sử dụng công cụ AI", H2))
     story.append(p(
         "Theo mục 1.6 của đề, tôi khai báo phạm vi đã sử dụng công cụ AI hỗ trợ trong bài tập này: "
@@ -619,7 +612,7 @@ def section_appendix() -> list:
     story.append(p(
         "Phần tôi trực tiếp thực hiện: cài đặt môi trường và tải toàn bộ dữ liệu; chạy toàn bộ thí nghiệm trên "
         "máy của mình; kiểm tra sự nhất quán của từng bảng số và từng hình trong báo cáo với "
-        "<i>metrics.json</i> mà các script sinh ra. Không có con số nào trong báo cáo được nhập tay."))
+        "<i>metrics.json</i> mà các script sinh ra."))
     return story
 
 

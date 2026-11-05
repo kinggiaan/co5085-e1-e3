@@ -208,12 +208,12 @@ def cover(title: str, dataset: str) -> list:
     return story
 
 
-def section_intro(num: int) -> list:
+def section_intro(num: int, exercise: str = "bài tập này") -> list:
     story = [Paragraph(f"{num}. Giới thiệu và thiết lập chung", H1)]
     story.append(p(
-        "Báo cáo trình bày ba bài tập E1–E3 trên cùng một tập dữ liệu nhỏ là MNIST: 60.000 ảnh huấn luyện "
-        "(chia 50.000 train / 10.000 validation theo seed 42) và 10.000 ảnh test chính thức. Việc dùng chung "
-        "một split cho cả ba bài đảm bảo mọi so sánh — kể cả so sánh giữa các họ mô hình khác nhau — là công bằng."))
+        f"Báo cáo trình bày {exercise} trên tập dữ liệu nhỏ MNIST: 60.000 ảnh huấn luyện "
+        "(chia 50.000 train / 10.000 validation theo seed 42) và 10.000 ảnh test chính thức. Split này dùng "
+        "chung cho cả E1, E2 và E3 nên mọi so sánh — kể cả giữa các họ mô hình khác nhau — là công bằng."))
     story.append(p(
         "Ảnh được chuẩn hoá với mean 0,1307 và std 0,3081 (số liệu chuẩn của MNIST) và <b>không</b> dùng "
         "augmentation, để chênh lệch kết quả phản ánh kiến trúc chứ không phải may mắn của phép biến đổi dữ liệu. "
@@ -228,7 +228,7 @@ def section_intro(num: int) -> list:
          ["Batch / seed", "128 / 42"],
          ["Phần cứng", "Intel i5-9300H, NVIDIA GTX 1650 4 GB, PyTorch 2.5.1"],
          ],
-        "Thiết lập thí nghiệm dùng chung cho cả ba bài.",
+        "Thiết lập thí nghiệm dùng chung cho E1–E3.",
         col_widths=[4.0 * cm, 12.0 * cm],
     )
     return story
@@ -578,22 +578,60 @@ def section_a2(num: int) -> list:
     return story
 
 
-def section_conclusion(num: int) -> list:
+def section_conclusion(num: int, items: list[str]) -> list:
     story = [Paragraph(f"{num}. Kết luận", H1)]
-    items = [
-        "<b>Kiến trúc phù hợp quan trọng hơn số tham số.</b> CNN 468 nghìn tham số đạt "
-        f"{pct(E1[2]['test_acc']) if len(E1) > 2 else '—'} trong khi MLP 235 nghìn tham số chỉ đạt "
-        f"{pct(E1[1]['test_acc']) if len(E1) > 1 else '—'}; khác biệt nằm ở giả định về cấu trúc ảnh, không ở capacity.",
-        "<b>Tự viết attention là kiểm chứng được.</b> Bản MSA viết tay cho output trùng với nn.MultiheadAttention "
-        "tới mức sai số dấu phẩy động khi dùng chung trọng số — đây là tiêu chuẩn đúng đắn thay cho việc chỉ so accuracy.",
-        "<b>Tokenization là lựa chọn thiết kế có giá.</b> Với encoder chỉ 2 block, ba cách chia token lệch nhau tới "
-        "hàng chục điểm phần trăm: tokenizer nào làm sẵn nhiều việc trích đặc trưng hơn thì kết quả tốt hơn. Số token "
-        "đồng thời quyết định chi phí O(N²d).",
-        "<b>Mô hình hồi quy không thắng trên dữ liệu không có phụ thuộc dài.</b> LSTM/GRU học được thứ tự (thí nghiệm "
-        "đảo hàng chứng minh điều đó) nhưng vẫn kém CNN trên MNIST: 98,25% so với 99,10%.",
-    ]
     story += bullets(items)
     return story
+
+
+CONCL_E1 = [
+    "<b>Kiến trúc phù hợp quan trọng hơn số tham số.</b> CNN 468 nghìn tham số đạt "
+    f"{pct(E1[2]['test_acc']) if len(E1) > 2 else '—'} trong khi MLP 235 nghìn tham số chỉ đạt "
+    f"{pct(E1[1]['test_acc']) if len(E1) > 1 else '—'}; khác biệt nằm ở giả định về cấu trúc ảnh "
+    "(chia sẻ trọng số, tính cục bộ), không ở capacity.",
+    "<b>Softmax tuyến tính là mốc chuẩn cần thiết.</b> Nó bão hoà quanh 92–93% và cho thấy giới hạn của một "
+    "bộ phân loại không có đặc trưng phi tuyến; khoảng cách 6,5 điểm so với CNN là phần mà tích chập đóng góp.",
+    "<b>Phân tích lỗi là phần không thể bỏ.</b> Confusion matrix và ảnh mẫu sai chỉ ra rằng lỗi còn lại chủ yếu "
+    "là ảnh mờ/cắt nét — tức giới hạn dữ liệu, không phải kiến trúc.",
+]
+
+CONCL_E2 = [
+    "<b>Tự viết attention là kiểm chứng được.</b> Bản MSA viết tay cho output trùng với "
+    "nn.MultiheadAttention tới mức sai số dấu phẩy động khi dùng chung trọng số — tiêu chuẩn đúng đắn "
+    "thay cho việc chỉ so accuracy.",
+    "<b>Tokenization là lựa chọn thiết kế có giá.</b> Với encoder chỉ 2 block, ba cách chia token lệch nhau "
+    "tới hàng chục điểm phần trăm: tokenizer nào làm sẵn nhiều việc trích đặc trưng hơn thì kết quả tốt hơn. "
+    "Số token đồng thời quyết định chi phí O(N²d).",
+    "<b>Chi phí tính toán của bản tự viết cao hơn.</b> Ba phép chiếu rời thay vì một phép gộp khiến mỗi epoch "
+    "chậm hơn bản PyTorch, dù chất lượng tương đương.",
+]
+
+CONCL_E3 = [
+    "<b>Mô hình hồi quy không thắng trên dữ liệu không có phụ thuộc dài.</b> LSTM/GRU học được thứ tự "
+    "(đảo thứ tự hàng làm accuracy rơi từ 97,78% xuống 11,22%) nhưng vẫn kém CNN trên MNIST: 98,25% so "
+    "với 99,10%.",
+    "<b>Đóng góp thật của LSTM ở đây là bằng chứng về thứ tự.</b> Thí nghiệm đảo hàng định lượng được việc "
+    "mô hình dùng thứ tự như thế nào — điều mà một con số accuracy đơn thuần không nói được.",
+]
+
+CONCL_A1 = [
+    "<b>Pretrain là yếu tố quyết định trên tập nhỏ.</b> Cùng ResNet-18, train từ đầu đạt "
+    f"{pct(next((r['test_acc'] for r in A1 if r['tag'] == 'resnet18_scratch'), 0))} trong khi finetune "
+    "đạt hơn 62% — chênh lệch ~30 điểm chỉ nhờ trọng số ImageNet.",
+    "<b>Mở nhiều tầng hơn thì tốt hơn, nhưng đóng băng vẫn rất đáng.</b> Trên ResNet-18, đóng băng toàn bộ "
+    "backbone cho 53% với chỉ 0,9% tham số trainable.",
+    "<b>Transformer cần pretrain rõ rệt.</b> Swin-T finetune dẫn đầu bảng, trong khi from-scratch tốn "
+    "1.663 s/epoch — vượt ngân sách compute của bài làm.",
+]
+
+CONCL_A2 = [
+    "<b>Trên tập nhỏ, pretrain chi phối hơn kiến trúc.</b> DeepLabV3 đạt 67,11% mIoU trong khi U-Net train "
+    "từ đầu chỉ 8,88% — khoảng cách này không phải do CNN hay Transformer, mà do đặc trưng có sẵn.",
+    "<b>SegFormer-B0 nhỏ nhưng cần thời gian.</b> 3,7M tham số, nhanh gấp 3× mỗi epoch, đạt 37,85% sau "
+    "4 epoch — khớp với hạn chế của paper: kết luận của họ đo trên tập lớn, chưa khảo sát vùng ít dữ liệu.",
+    "<b>Kiểm chứng trước khi kết luận về kiến trúc.</b> Phép overfit 2 ảnh (mIoU 71,5%) giúp loại trừ khả "
+    "năng U-Net sai kiến trúc, và chỉ ra giới hạn thật là số epoch.",
+]
 
 
 def section_appendix(num: int, commands: list[str]) -> list:
@@ -656,7 +694,9 @@ DOCS = [
         "BÁO CÁO BÀI TẬP E1",
         "E1 — softmax / MLP / CNN",
         "MNIST (28×28, 10 lớp)",
-        [functools.partial(section_intro), functools.partial(section_e1), functools.partial(section_conclusion)],
+        [functools.partial(section_intro, exercise="bài tập E1 (softmax, MLP, CNN)"),
+         functools.partial(section_e1),
+         functools.partial(section_conclusion, items=CONCL_E1)],
         ["python E1/run_all.py", "python reports/build_report.py"],
     ),
     (
@@ -664,7 +704,9 @@ DOCS = [
         "BÁO CÁO BÀI TẬP E2",
         "E2 — MSA và tokenization",
         "MNIST (28×28, 10 lớp)",
-        [functools.partial(section_intro), functools.partial(section_e2)],
+        [functools.partial(section_intro, exercise="bài tập E2 (MSA và tokenization)"),
+         functools.partial(section_e2),
+         functools.partial(section_conclusion, items=CONCL_E2)],
         ["python E2/run_all.py", "python E2/test_msa.py", "python reports/build_report.py"],
     ),
     (
@@ -672,7 +714,9 @@ DOCS = [
         "BÁO CÁO BÀI TẬP E3",
         "E3 — LSTM / GRU",
         "MNIST (28×28, 10 lớp)",
-        [functools.partial(section_intro), functools.partial(section_e3)],
+        [functools.partial(section_intro, exercise="bài tập E3 (LSTM/GRU trên chuỗi ảnh)"),
+         functools.partial(section_e3),
+         functools.partial(section_conclusion, items=CONCL_E3)],
         ["python E3/run_all.py", "python reports/build_report.py"],
     ),
     (
@@ -680,7 +724,7 @@ DOCS = [
         "BÁO CÁO BÀI TẬP LỚN A1",
         "A1 — CNN vs Transformer",
         "Tiny-ImageNet (200 lớp, 64×64)",
-        [functools.partial(section_a1)],
+        [functools.partial(section_a1), functools.partial(section_conclusion, items=CONCL_A1)],
         ["python scripts/prepare_tiny_imagenet.py", "python A1/run_all.py",
          "python reports/build_report.py"],
     ),
@@ -689,7 +733,7 @@ DOCS = [
         "BÁO CÁO BÀI TẬP LỚN A2",
         "A2 — Segmentation trên VOC 2012",
         "Pascal VOC 2012 (21 lớp)",
-        [functools.partial(section_a2)],
+        [functools.partial(section_a2), functools.partial(section_conclusion, items=CONCL_A2)],
         ["python scripts/prepare_voc2012.py", "python A2/run_all.py", "python A2/make_demo.py",
          "python reports/build_report.py"],
     ),
